@@ -188,6 +188,18 @@ html[data-theme=dark] .btn.pri,html[data-theme=dark] .mbtn.pri{background:var(--
 .pledge{max-height:50dvh;overflow:auto;text-align:right;line-height:1.9;font-size:13px;color:var(--ink)}
 .iv-toast{position:fixed;right:16px;left:16px;bottom:calc(88px + env(safe-area-inset-bottom) + var(--vvb,0px));z-index:80;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow);font-size:14px;font-weight:700;text-align:right;opacity:0;transform:translateY(12px);pointer-events:none;transition:opacity .28s ease,transform .28s ease}
 .iv-toast.show{opacity:1;transform:none}
+.tour-mask{position:fixed;inset:0;z-index:95;background:rgba(8,6,10,.62);display:none;align-items:flex-end;justify-content:center;padding:16px 16px calc(96px + env(safe-area-inset-bottom))}
+.tour-mask.on{display:flex}
+.tour-card{width:100%;max-width:420px;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px 16px 14px;box-shadow:var(--shadow);animation:tourIn .35s ease}
+@keyframes tourIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.tour-card b{display:block;font-size:16px;margin-bottom:6px}
+.tour-card p{margin:0 0 14px;color:var(--mute);font-size:13px;line-height:1.8}
+.tour-nav{display:flex;gap:8px}
+.tour-nav .btn{flex:1}
+.tour-step{font-size:11px;color:var(--gold);font-weight:800;margin-bottom:6px}
+.tour-spot{outline:3px solid var(--gold);outline-offset:5px;border-radius:16px;position:relative;z-index:97;box-shadow:0 0 0 6px rgba(232,195,106,.28);animation:tourPulse 1.4s ease-in-out infinite}
+@keyframes tourPulse{50%{box-shadow:0 0 0 10px rgba(232,195,106,.12)}}
+
 .phero{text-align:center;padding:6px 0 14px}
 .phero img{width:88px;height:88px;border-radius:50%;object-fit:cover;margin:0 auto 10px;border:3px solid var(--gold);background:#1c1610;display:block}
 .phero h2{margin:0}
@@ -398,6 +410,7 @@ html[data-theme=dark] .tcard .evt-acts .enter-evt{background:var(--gold);color:#
 </section>
 
 <div class="iv-toast" id="ivToast"></div>
+<div class="tour-mask" id="tourMask"><div class="tour-card"><div class="tour-step" id="tourStep"></div><b id="tourTitle"></b><p id="tourText"></p><div class="tour-nav"><button type="button" class="btn" id="tourSkip">تخطي</button><button type="button" class="btn pri" id="tourNext">التالي</button></div></div></div>
 <div class="modal-bg" id="askDel">
   <div class="modal">
     <h2 id="askDelTitle">تأكيد الحذف</h2>
@@ -456,16 +469,16 @@ html[data-theme=dark] .tcard .evt-acts .enter-evt{background:var(--gold);color:#
         <p>آخر الأخبار والأعمال</p>
       </div>
       <div class="news" id="news"><div class="news-track" id="newsTrack"></div><div class="news-dots" id="newsDots"></div></div>
-      <div class="sl"><h2>الفنانون</h2></div>
+      <div class="sl" id="artistsHead"><h2>الفنانون</h2></div>
       <div id="artists"></div>
-      <div class="sl"><h2>المنشورات</h2><em id="trackCount">0</em></div>
+      <div class="sl" id="postsHead"><h2>المنشورات</h2><em id="trackCount">0</em></div>
       <div class="masonry" id="homeGrid"></div>
     </div>
 
     <div id="v-songs" class="view">
       <div class="sl"><h2>الأغاني</h2><button type="button" class="linkish" id="goStats">الإحصائيات</button></div>
       <div class="search"><input id="homeSearch" placeholder="ابحث عن أغنية أو فنان"/></div>
-      <div class="radio-card">
+      <div class="radio-card" id="radioCard">
         <h3>راديو <span>IV</span></h3>
         <div class="vu" id="vu"><b></b><b></b><b></b><b></b><b></b></div>
         <div class="rmodes" id="rmodes">
@@ -512,13 +525,13 @@ html[data-theme=dark] .tcard .evt-acts .enter-evt{background:var(--gold);color:#
 
     <div id="v-awards" class="view">
       <div class="sl"><h2>الجوائز</h2></div>
-      <div class="box"><h3>الجوائز الشهرية</h3><div id="monthlyAwards"></div></div>
-      <div class="box"><h3>IV AWARDS — جوائز السنة</h3><div id="yearlyAwards"></div></div>
+      <div class="box" id="boxMonthly"><h3>الجوائز الشهرية</h3><div id="monthlyAwards"></div></div>
+      <div class="box" id="boxYearly"><h3>IV AWARDS — جوائز السنة</h3><div id="yearlyAwards"></div></div>
     </div>
 
     <div id="v-stats" class="view">
       <div class="sl"><h2>الإحصائيات</h2><button type="button" class="linkish" id="backSongs">رجوع للأغاني</button></div>
-      <div class="stat-grid">
+      <div class="stat-grid" id="statsGrid">
         <div class="stat-card"><b id="gPlays">0</b><span>إجمالي الاستماعات</span></div>
         <div class="stat-card"><b id="gLikes">0</b><span>إجمالي الإعجابات</span></div>
         <div class="stat-card"><b id="gTracks">0</b><span>الأعمال</span></div>
@@ -529,7 +542,7 @@ html[data-theme=dark] .tcard .evt-acts .enter-evt{background:var(--gold);color:#
     </div>
 
     <div id="v-events" class="view">
-      <div class="sl"><h2>الفعاليات</h2></div>
+      <div class="sl" id="eventsHead"><h2>الفعاليات</h2></div>
       <div class="agenda-head">
         <button type="button" id="prevY">‹</button>
         <strong id="yearLab"></strong>
@@ -1134,10 +1147,83 @@ var $=function(id){return document.getElementById(id)};
       var ml=document.getElementById('ivManifest'); if(ml) ml.href=URL.createObjectURL(new Blob([JSON.stringify(man)],{type:'application/manifest+json'}));
     }catch(e){}
   }
+
+  var TOUR=[
+    {v:'home',sel:'#news',title:'آخر الأخبار',text:'هنا تطلع آخر أخبار المنصة أولاً في الصفحة الرئيسية.'},
+    {v:'home',sel:'#artistsHead,#artists',title:'الفنانون',text:'صور الفنانين بجانب بعض. اضغط أي فنان لفتح صفحته وأعماله.'},
+    {v:'home',sel:'#postsHead,#homeGrid',title:'المنشورات',text:'هنا أحدث الأعمال المنشورة. اضغط العمل للتشغيل.'},
+    {v:'songs',sel:'#radioCard',title:'راديو IV',text:'من هنا تشغّل الراديو: مكس أو حسب نوع الأغنية، مع الفاصل بين الأعمال.'},
+    {v:'songs',sel:'#chips',title:'أنواع الأغاني',text:'صفّي القائمة: قصة، حزينة، سعيدة، أو دس تراك.'},
+    {v:'songs',sel:'#songsList',title:'قائمة الأغاني',text:'كل الأعمال تظهر هنا حسب النوع الذي اخترته.'},
+    {v:'songs',sel:'#goStats',title:'الإحصائيات',text:'اضغط الإحصائيات لرؤية أرقام الاستماع والإعجاب والأعمال والفنانين.'},
+    {v:'stats',sel:'#statsGrid',title:'أرقام المنصة',text:'إجمالي الاستماعات والإعجابات وعدد الأعمال والفنانين.'},
+    {v:'stats',sel:'#topPlays',title:'ترتيب الاستماع',text:'الأعمال الأعلى استماعاً تظهر في هذا الترتيب.'},
+    {v:'stats',sel:'#topLikes',title:'ترتيب الإعجاب',text:'الأعمال الأعلى إعجاباً تظهر هنا.'},
+    {v:'awards',sel:'#boxMonthly',title:'الجوائز الشهرية',text:'الأكثر استماعاً، الأكثر إعجاباً، وأفضل أغنية في الشهر تُحسم بالتصويت.'},
+    {v:'awards',sel:'#boxYearly',title:'IV AWARDS',text:'جوائز نهاية السنة حسب النوع، أفضل تعاون، وأفضل أغنية في السنة.'},
+    {v:'events',sel:'#eventsHead',title:'الفعاليات',text:'مواعيد حفلات الشهر ودخول الإيفنت بعد انتهاء العد. حفل السنة IV AWARDS له موعد مستقل.'},
+    {v:'profile',sel:'#phero',title:'صفحتك',text:'هذي صفحتك: صورتك، اسمك، نبذتك، وخلفية حسابك يراها الجميع.'},
+    {v:'profile',sel:'#pubBtn',open:'pub',title:'نشر عمل',text:'من هنا تنشر أغنية جديدة. نمر على الخطوات واحدة واحدة.'},
+    {v:'profile',sel:'#cf',open:'pub',title:'غلاف الأغنية',text:'أولاً اختر صورة غلاف العمل.'},
+    {v:'profile',sel:'#mf',open:'pub',title:'ملف الصوت',text:'ثانياً ارفع ملف الأغنية بصيغة MP3.'},
+    {v:'profile',sel:'#tt',open:'pub',title:'اسم الأغنية',text:'ثالثاً اكتب عنوان العمل.'},
+    {v:'profile',sel:'#cats',open:'pub',title:'نوع الأغنية',text:'رابعاً حدّد التصنيف: قصة، حزينة، سعيدة، أو دس تراك.'},
+    {v:'profile',sel:'#collabPick',open:'pub',title:'التعاون',text:'اختياري: حدّد طرف تعاون. العمل يبقى معلّق حتى يوافق الجميع ثم يُنشر.'},
+    {v:'profile',sel:'#pub',open:'pub',title:'نشر',text:'أخيراً اضغط نشر. إذا ما في تعاون ينزل مباشرة.'},
+    {v:'profile',sel:'#editBtn',open:'edit',title:'تعديل الملف',text:'من هنا تعدّل بيانات حسابك.'},
+    {v:'profile',sel:'#en',open:'edit',title:'الاسم',text:'اسمك الظاهر للجميع في الرئيسية وصفحتك.'},
+    {v:'profile',sel:'#eb',open:'edit',title:'النبذة',text:'سطر يعرّف عنك تحت الاسم.'},
+    {v:'profile',sel:'#ea',open:'edit',title:'صورة الحساب',text:'صورتك الشخصية. تظهر للكل في قائمة الفنانين.'},
+    {v:'profile',sel:'#bannerFile',open:'edit',title:'خلفية الحساب',text:'خلفية متلاشية لصفحتك، ويشوفها أي شخص يفتح ملفك.'},
+    {v:'profile',sel:'#accentDots',open:'edit',title:'لون الاسم',text:'اختر لون اسمك في صفحتك.'},
+    {v:'profile',sel:'#iconPicks',open:'edit',title:'أيقونة الشاشة',text:'الشكل الذي يظهر عند إضافة الموقع للشاشة الرئيسية. بعد الحفظ أضف الاختصار من جديد.'},
+    {v:'home',sel:'.dock',title:'انتهت الجولة',text:'تقدر تتنقل من الشريط السفلي في أي وقت. جاهز تبدأ.'}
+  ];
+  var tourI=0;
+  function tourKey(){ return 'iv_tour_'+(profile&&profile.code||'x'); }
+  function endTour(){
+    try{ localStorage.setItem(tourKey(),'1'); }catch(eT){}
+    $('tourMask').classList.remove('on');
+    document.querySelectorAll('.tour-spot').forEach(function(x){x.classList.remove('tour-spot')});
+    hideForms();
+  }
+  function showTour(i){
+    tourI=i;
+    var s=TOUR[i]; if(!s){ endTour(); return; }
+    if(s.v) go(s.v);
+    if(s.open==='pub'){ hideForms(); if($('adminBox'))$('adminBox').classList.add('hidden'); if($('publishBox'))$('publishBox').classList.remove('hidden'); }
+    else if(s.open==='edit'){ hideForms(); if($('adminBox'))$('adminBox').classList.add('hidden'); if($('editBox'))$('editBox').classList.remove('hidden'); if(typeof renderIconPicks==='function') renderIconPicks(); }
+    else { hideForms(); }
+    document.querySelectorAll('.tour-spot').forEach(function(x){x.classList.remove('tour-spot')});
+    setTimeout(function(){
+      var first=null;
+      (s.sel||'').split(',').forEach(function(sel){
+        var el=document.querySelector(sel.trim());
+        if(!el) return;
+        el.classList.add('tour-spot');
+        if(!first) first=el;
+      });
+      if(first && first.scrollIntoView) first.scrollIntoView({behavior:'smooth',block:'center'});
+    }, 80);
+    $('tourStep').textContent='خطوة '+(i+1)+' من '+TOUR.length;
+    $('tourTitle').textContent=s.title;
+    $('tourText').textContent=s.text;
+    $('tourNext').textContent=i===TOUR.length-1?'إنهاء':'التالي';
+    $('tourMask').classList.add('on');
+  }
+  function startTourIfNeeded(){
+    try{ if(localStorage.getItem(tourKey())==='1') return; }catch(eN){}
+    setTimeout(function(){ showTour(0); }, 600);
+  }
+  if($('tourNext')) $('tourNext').onclick=function(){ showTour(tourI+1); };
+  if($('tourSkip')) $('tourSkip').onclick=endTour;
+  if($('tourNext')) $('tourNext').onclick=function(){ showTour(tourI+1); };
+  if($('tourSkip')) $('tourSkip').onclick=endTour;
+
   function finishEnter(){
     $('pledgeModal').classList.remove('open');
     $('authModal').classList.remove('open'); $('land').classList.remove('show'); $('app').classList.add('show');
-    renderAll(); applyProfileLook(); applyAppIcon(profile.icon); if($('wrap'))$('wrap').scrollTop=0; maybeShowPwa();
+    renderAll(); applyProfileLook(); applyAppIcon(profile.icon); if($('wrap'))$('wrap').scrollTop=0; maybeShowPwa(); startTourIfNeeded();
   }
   function enterAs(code){
     var u=users[code]; if(!u)return false;
