@@ -947,6 +947,8 @@ html[data-theme=dark] .tcard .evt-acts .enter-evt{background:var(--gold);color:#
   }
   Object.keys(USERS_SEED).forEach(function(k){ if(!users[k]) users[k]=USERS_SEED[k]; });
   if(!users['IV2026']) users['IV2026']={name:'مستخدم IV',bio:'مرحباً',admin:false,avatar:''};
+  if(users['P4R8N1WT']) users['P4R8N1WT'].name='فارس';
+  Object.keys(users).forEach(function(k){ if(users[k]&&(users[k].name==='فارسالاا'||users[k].name==='فارس الاا'||String(users[k].name).replace(/\s/g,'')==='فارسالاا')) users[k].name='فارس'; });
   // ضمان أن عبود هو الأدمن على رمزه
   Object.keys(users).forEach(function(k){ if(users[k]&&users[k].name==='عبود') users[k].admin=true; });
   save('ivlive_users',users);
@@ -1014,7 +1016,14 @@ html[data-theme=dark] .tcard .evt-acts .enter-evt{background:var(--gold);color:#
     });
   }
   normalizeArtists();
-  artistsList.forEach(function(a){ if(a.code==='P4R8N1WT' && (a.r==='منتج ومقدم' || !a.r)) a.r='فنان مؤسس و منتج و مقدم'; });
+  artistsList.forEach(function(a){
+    if(a.code==='P4R8N1WT' || a.n==='فارسالاا' || a.n==='فارس الاا'){ a.n='فارس'; a.code='P4R8N1WT'; }
+    if(a.code==='P4R8N1WT' && (a.r==='منتج ومقدم' || !a.r)) a.r='فنان مؤسس و منتج و مقدم';
+  });
+  tracks.forEach(function(t){
+    if(t.artist==='فارسالاا') t.artist='فارس';
+    if(t.artists) t.artists=t.artists.map(function(n){return (n==='فارسالاا'||n==='فارس الاا')?'فارس':n});
+  });
   save('ivlive_artists',artistsList);
   var cover=null,cat='قصة',filter='الكل',rmode='mix',rlist=[],ridx=0,queueList=tracks.slice(),queueIdx=0;
   var newsIdx=0,newsTimer=null,collabSel={},year=new Date().getFullYear();
@@ -1039,7 +1048,7 @@ html[data-theme=dark] .tcard .evt-acts .enter-evt{background:var(--gold);color:#
 
   function persistTracks(){
     var slim=tracks.map(function(t){
-      var c={id:t.id,title:t.title,artist:t.artist,artists:t.artists,cover:t.cover,category:t.category,audio:t.audioUrl||'',audioUrl:t.audioUrl||'',audioParts:t.audioParts||0,plays:t.plays||0,likes:t.likes||0,dislikes:t.dislikes||0,owner:t.owner||'',date:t.date||'',awards:t.awards||[]};
+      var c={id:t.id,title:t.title,artist:t.artist,artists:t.artists,cover:t.cover,category:t.category,audio:t.audioUrl||'',audioUrl:t.audioUrl||'',audioParts:t.audioParts||0,plays:t.plays||0,likes:t.likes||0,dislikes:t.dislikes||0,owner:t.owner||'',date:t.date||'',awards:t.awards||[],pending:!!t.pending,pendingFor:t.pendingFor||[]};
       return c;
     });
     save('ivlive_tracks',slim);
@@ -1327,8 +1336,11 @@ html[data-theme=dark] .tcard .evt-acts .enter-evt{background:var(--gold);color:#
     if(queueIdx<0){queueList=tracks.slice();queueIdx=queueList.findIndex(function(x){return String(x.id)===String(t.id)})}
     playTrack(t);
   }
+  function publicTracks(){
+    return tracks.filter(function(t){ return !t.pending; });
+  }
   function visibleTracks(){
-    var list=filter==='الكل'?tracks.slice():tracks.filter(function(t){return t.category===filter});
+    var list=filter==='الكل'?publicTracks():publicTracks().filter(function(t){return t.category===filter});
     if(q){ var qq=q; list=list.filter(function(t){return (t.title+' '+artistLine(t)).indexOf(qq)>=0}); }
     return list;
   }
@@ -1497,7 +1509,7 @@ html[data-theme=dark] .tcard .evt-acts .enter-evt{background:var(--gold);color:#
       if(aw.length){
         chip='<button type="button" class="award-chip" data-awards="'+aw.map(function(x){return esc(x)}).join('||')+'">'+CROWN+'<span>'+aw.length+'</span></button>';
       }
-      var neu=isNewTrack(t)?'<div class="tag-new">جديد</div>':'';
+      var neu=t.pending?'<div class="tag-new" style="background:#c44b43;color:#fff">معلّق</div>':(isNewTrack(t)?'<div class="tag-new">جديد</div>':'');
       var del='';
       if(opts.canDelete && (profile.admin || String(t.owner)===String(profile.code))){
         del='<button type="button" class="tile-del" data-del-track="'+t.id+'">حذف</button>';
@@ -1560,7 +1572,7 @@ html[data-theme=dark] .tcard .evt-acts .enter-evt{background:var(--gold);color:#
   }
 
   function renderHome(){
-    var list=tracks.slice();
+    var list=publicTracks();
     if(q){var qq=q; list=list.filter(function(t){return (t.title+' '+artistLine(t)).indexOf(qq)>=0});}
     $('trackCount').textContent=list.length+' عمل';
     $('homeGrid').innerHTML=grid(list,'لا منشورات');
@@ -1577,7 +1589,7 @@ html[data-theme=dark] .tcard .evt-acts .enter-evt{background:var(--gold);color:#
 
   function shuffle(a){for(var x=a.length-1;x>0;x--){var y=Math.floor(Math.random()*(x+1));var tmp=a[x];a[x]=a[y];a[y]=tmp}return a}
   function buildRadioList(){
-    rlist=rmode==='mix'?tracks.slice():tracks.filter(function(t){return t.category===rmode});
+    rlist=rmode==='mix'?publicTracks():publicTracks().filter(function(t){return t.category===rmode});
     shuffle(rlist); ridx=0;
   }
   function stopRadio(){radioOn=false;rlist=[];playingJingle=false;hideBumper();try{jingle.pause()}catch(e){};$('rstat').textContent='متوقف';$('vu').classList.remove('on')}
@@ -2167,8 +2179,21 @@ html[data-theme=dark] .tcard .evt-acts .enter-evt{background:var(--gold);color:#
       var id=btn.getAttribute('data-id'),a=btn.getAttribute('data-a');
       var n=notifs.find(function(x){return String(x.id)===String(id)});if(!n)return;
       n.status=a==='yes'?'accepted':'rejected';
-      if(a==='yes'){var t=tracks.find(function(x){return String(x.id)===String(n.trackId)});if(t){if(!t.artists)t.artists=[t.artist];if(t.artists.indexOf(n.to)<0)t.artists.push(n.to);t.artist=t.artists.join(' · ');persistTracks()}}
-      save('ivlive_notifs',notifs);updateBadge();renderNotifs();renderHome();renderSongs();
+      var t=tracks.find(function(x){return String(x.id)===String(n.trackId)});
+      if(t){
+        if(a==='yes'){
+          if(!t.artists)t.artists=[t.artist];
+          if(t.artists.indexOf(n.to)<0)t.artists.push(n.to);
+          t.artist=t.artists.filter(function(x,i,arr){return arr.indexOf(x)===i}).join(' · ');
+          var related=notifs.filter(function(x){return String(x.trackId)===String(t.id)});
+          var allYes=related.length && related.every(function(x){return x.status==='accepted'});
+          if(allYes){ t.pending=false; t.pendingFor=[]; }
+        }else{
+          t.pending=true;
+        }
+        persistTracks();
+      }
+      save('ivlive_notifs',notifs);updateBadge();renderNotifs();renderHome();renderSongs();renderArtists();updateProfileUI();
     }});
   }
 
@@ -2359,13 +2384,15 @@ html[data-theme=dark] .tcard .evt-acts .enter-evt{background:var(--gold);color:#
     var btn=$('pub'); if(btn){btn.disabled=true;btn.textContent='جاري تجهيز الملف...'}
     shrink(cover,480,function(small){
       function done(parts, note){
-        tracks.unshift({id:id,title:t,artist:profile.name,artists:[profile.name],cover:small,audio:blobUrl,audioUrl:'',audioParts:parts||0,category:cat,owner:profile.code,plays:0,likes:0,dislikes:0,date:pubDate,awards:[]});
+        var pending=partners.length>0;
+        var names=[profile.name].concat(partners);
+        tracks.unshift({id:id,title:t,artist:profile.name,artists:pending?[profile.name]:names,cover:small,audio:blobUrl,audioUrl:'',audioParts:parts||0,category:cat,owner:profile.code,plays:0,likes:0,dislikes:0,date:pubDate,awards:[],pending:pending,pendingFor:partners.slice()});
         partners.forEach(function(p){notifs.push({id:Date.now()+Math.random(),from:profile.name,to:p,trackId:id,trackTitle:t,status:'pending'})});
         save('ivlive_notifs',notifs);persistTracks();
         $('mf').value='';$('cf').value='';$('tt').value='';$('cp').innerHTML='';$('mn').textContent='';cover=null;collabSel={};
         hideForms();renderAll();go('profile');
         if(btn){btn.disabled=false;btn.textContent='نشر / إرسال طلبات التعاون'}
-        alert(note);
+        alert(pending?'تم إرسال طلب التعاون. العمل معلّق حتى يوافق الجميع.':note);
       }
       withTimeout(readFileB64(mp3), 20000).then(function(b64){
         if(btn) btn.textContent='جاري الرفع للسحابة...';
