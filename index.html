@@ -914,10 +914,49 @@ html[data-theme=dark] .tcard .evt-acts .enter-evt{background:var(--gold);color:#
   var playLog=load('ivlive_plays',{})||{};
   var audioMem={}, session=load('ivlive_session',null)||load('ivlive_session_old',null);
   var profile={name:'مستخدم',bio:'',avatar:'',admin:false,code:''};
-  var defaultArtists=[{n:'عبود',r:'فنان مؤسس'},{n:'فارس',r:'فنان مؤسس و منتج و مقدم'},{n:'أحمد',r:'فنان مؤسس'},{n:'فهد',r:'فنان مؤسس'},{n:'محمد',r:'فنان'}];
+  var defaultArtists=[
+    {n:'عبود',r:'فنان مؤسس',code:'H7Q2M9XK'},
+    {n:'فارس',r:'فنان مؤسس و منتج و مقدم',code:'P4R8N1WT'},
+    {n:'أحمد',r:'فنان مؤسس',code:'C6Y3B0LK'},
+    {n:'فهد',r:'فنان مؤسس',code:'Z2P9F5MX'},
+    {n:'محمد',r:'فنان',code:'J8D1A7QE'}
+  ];
   var storedArtists=load('ivlive_artists',null);
-  var artistsList=(storedArtists&&storedArtists.length)?storedArtists:defaultArtists;
-  artistsList.forEach(function(a){ if(a.n==='فارس' && (a.r==='منتج ومقدم' || !a.r)) a.r='فنان مؤسس و منتج و مقدم'; });
+  var artistsList=(storedArtists&&storedArtists.length)?storedArtists:defaultArtists.slice();
+  function normalizeArtists(){
+    var map={'عبود':'H7Q2M9XK','فارس':'P4R8N1WT','أحمد':'C6Y3B0LK','فهد':'Z2P9F5MX','محمد':'J8D1A7QE'};
+    artistsList.forEach(function(a){
+      if(!a.code && map[a.n]) a.code=map[a.n];
+      if(!a.code){
+        var k=Object.keys(users).find(function(c){return users[c]&&users[c].name===a.n});
+        if(k) a.code=k;
+      }
+      if(a.code && users[a.code]){
+        if(users[a.code].name) a.n=users[a.code].name;
+        if(users[a.code].avatar) a.avatar=users[a.code].avatar;
+      }
+    });
+    var seen={};
+    artistsList=artistsList.filter(function(a){
+      if(a.code){
+        if(seen[a.code]){
+          if(a.avatar && !seen[a.code].avatar) seen[a.code].avatar=a.avatar;
+          return false;
+        }
+        seen[a.code]=a; return true;
+      }
+      return a.r!=='فنان IV';
+    });
+    var have=artistsList.map(function(a){return a.code});
+    defaultArtists.forEach(function(d){ if(have.indexOf(d.code)<0) artistsList.push(Object.assign({},d)); });
+    var order=['H7Q2M9XK','P4R8N1WT','C6Y3B0LK','Z2P9F5MX','J8D1A7QE'];
+    artistsList.sort(function(a,b){
+      var ia=order.indexOf(a.code), ib=order.indexOf(b.code);
+      if(ia<0&&ib<0) return 0; if(ia<0) return 1; if(ib<0) return -1; return ia-ib;
+    });
+  }
+  normalizeArtists();
+  artistsList.forEach(function(a){ if(a.code==='P4R8N1WT' && (a.r==='منتج ومقدم' || !a.r)) a.r='فنان مؤسس و منتج و مقدم'; });
   save('ivlive_artists',artistsList);
   var cover=null,cat='قصة',filter='الكل',rmode='mix',rlist=[],ridx=0,queueList=tracks.slice(),queueIdx=0;
   var newsIdx=0,newsTimer=null,collabSel={},year=new Date().getFullYear();
@@ -2158,11 +2197,19 @@ html[data-theme=dark] .tcard .evt-acts .enter-evt{background:var(--gold);color:#
       users[profile.code]={name:profile.name,bio:profile.bio,admin:profile.admin,avatar:profile.avatar||''};
       var hit=false;
       artistsList.forEach(function(a){
-        if(a.n===oldName || a.n===profile.name || a.code===profile.code){
-          a.n=profile.name; a.avatar=profile.avatar||a.avatar||''; a.code=profile.code; hit=true;
+        if(a.code===profile.code || a.n===oldName){
+          a.n=profile.name;
+          a.avatar=profile.avatar||a.avatar||'';
+          a.code=profile.code;
+          hit=true;
         }
       });
-      if(!hit && profile.name) artistsList.push({n:profile.name,r:'فنان IV',avatar:profile.avatar||'',code:profile.code});
+      if(!hit){
+        artistsList.forEach(function(a){
+          if(!hit && (a.n==='عبود' && profile.admin)){ a.n=profile.name; a.avatar=profile.avatar||''; a.code=profile.code; hit=true; }
+        });
+      }
+      normalizeArtists();
       save('ivlive_users',users);
       persistArtists();
       hideForms();updateProfileUI();renderArtists();renderHome();
@@ -2340,8 +2387,8 @@ html[data-theme=dark] .tcard .evt-acts .enter-evt{background:var(--gold);color:#
       else { persistTracks(); }
       if(cn && cn.length){ news=normalizeNews(cn); changed=true; save('ivlive_news',news); }
       else { cloudPut('news', news); }
-      if(ca && ca.length){ artistsList=ca; changed=true; save('ivlive_artists',artistsList); }
-      else { cloudPut('artists', artistsList); }
+      if(ca && ca.length){ artistsList=ca; normalizeArtists(); changed=true; save('ivlive_artists',artistsList); }
+      else { normalizeArtists(); cloudPut('artists', artistsList); }
       if(cv){ votesStore=cv; save('ivlive_votes',votesStore); }
       if(cp){ postponeMap=cp; save('ivlive_postpone',postponeMap); }
       if(cr){ reactions=cr; save('ivlive_reactions',reactions); }
@@ -2358,7 +2405,7 @@ html[data-theme=dark] .tcard .evt-acts .enter-evt{background:var(--gold);color:#
             if(name==='users' && typeof val==='object'){ users=val; }
             if(name==='tracks' && val.length!=null){ tracks=val; }
             if(name==='news' && val.length!=null){ news=normalizeNews(val); }
-            if(name==='artists' && val.length!=null){ artistsList=val; }
+            if(name==='artists' && val.length!=null){ artistsList=val; normalizeArtists(); }
             if(name==='votes') votesStore=val||{};
             if(name==='postpone') postponeMap=val||{};
             if(name==='reactions') reactions=val||{};
