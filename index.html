@@ -585,6 +585,12 @@ html[data-theme=dark] .tcard .evt-acts .enter-evt{background:var(--gold);color:#
           <button type="button" class="color-dot" data-c="#f472b6" style="background:#f472b6"></button>
           <button type="button" class="color-dot" data-c="#60a5fa" style="background:#60a5fa"></button>
           <button type="button" class="color-dot" data-c="#fb923c" style="background:#fb923c"></button>
+          <button type="button" class="color-dot" data-c="#f5f1e8" style="background:#f5f1e8"></button>
+          <button type="button" class="color-dot" data-c="#ef4444" style="background:#ef4444"></button>
+          <button type="button" class="color-dot" data-c="#22d3ee" style="background:#22d3ee"></button>
+          <button type="button" class="color-dot" data-c="#a3e635" style="background:#a3e635"></button>
+          <button type="button" class="color-dot" data-c="#e879f9" style="background:#e879f9"></button>
+          <button type="button" class="color-dot" data-c="#ffffff" style="background:#fff"></button>
         </div>
         <label class="fl">أيقونة اختصار الشاشة الرئيسية</label>
         <p class="ident-meta">معاينة الشكل قبل الاختيار. بعد الحفظ احذف الاختصار القديم من الجوال وأضفه من جديد حتى يتحدث.</p>
@@ -947,7 +953,8 @@ var $=function(id){return document.getElementById(id)};
     ivlive_postpone:'postpone',
     ivlive_reactions:'reactions',
     ivlive_notifs:'notifs',
-    ivlive_plays:'plays'
+    ivlive_plays:'plays',
+    ivlive_deleted:'deleted'
   };
   function save(k,v){
     try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}
@@ -1077,7 +1084,15 @@ var $=function(id){return document.getElementById(id)};
   var exitBtn=$('exitDemo');
   if(exitBtn){exitBtn.onclick=function(){try{if(window.parent&&window.parent!==window){window.parent.postMessage('iv-exit-demo','*');return}}catch(e){}};exitBtn.style.display=(window.parent&&window.parent!==window)?'':'none'}
 
+    var deletedTracks=load('ivlive_deleted',[])||[];
+  function markDeleted(id){
+    id=String(id);
+    if(deletedTracks.indexOf(id)<0) deletedTracks.push(id);
+    save('ivlive_deleted', deletedTracks);
+  }
   function persistTracks(){
+    tracks=tracks.filter(function(t){ return deletedTracks.indexOf(String(t.id))<0; });
+
     var slim=tracks.map(function(t){
       var c={id:t.id,title:t.title,artist:t.artist,artists:t.artists,cover:t.cover,category:t.category,audio:t.audioUrl||'',audioUrl:t.audioUrl||'',audioParts:t.audioParts||0,plays:t.plays||0,likes:t.likes||0,dislikes:t.dislikes||0,owner:t.owner||'',date:t.date||'',awards:t.awards||[],pending:!!t.pending,pendingFor:t.pendingFor||[]};
       return c;
@@ -1101,10 +1116,13 @@ var $=function(id){return document.getElementById(id)};
   function fmt(s){s=Math.floor(s||0);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
 
   function applyAppIcon(key){
-    key=key||(profile&&profile.icon)||'dark';
+    key=key||(profile&&profile.icon)||localStorage.getItem('iv_icon')||'dark';
+    try{ localStorage.setItem('iv_icon', key); }catch(eI){}
     var src=(window.IV_ICONS&&IV_ICONS[key])||document.querySelector('link[rel="apple-touch-icon"]').getAttribute('href');
-    var link=document.querySelector('link[rel="apple-touch-icon"]');
-    if(link) link.setAttribute('href',src);
+    document.querySelectorAll('link[rel="apple-touch-icon"]').forEach(function(n){ n.parentNode.removeChild(n); });
+    var link=document.createElement('link');
+    link.rel='apple-touch-icon'; link.sizes='180x180'; link.href=src;
+    document.head.appendChild(link);
     var fav=document.querySelector('link[rel="icon"]');
     if(fav) fav.setAttribute('href',src);
     try{
@@ -2278,6 +2296,8 @@ var $=function(id){return document.getElementById(id)};
     var t=tracks.find(function(x){return String(x.id)===String(id)});
     if(t && !(profile.admin || String(t.owner)===String(profile.code))){ toast('ما تقدر تحذف إلا أعمالك'); return; }
     if(t) deleteAudioParts(t.id, t.audioParts||12);
+    try{ if(cloudDb){ cloudDb.collection('iv').doc('cover_'+id).delete().catch(function(){}); cloudDb.collection('iv').doc('aud_'+id).delete().catch(function(){}); } }catch(eD){}
+    markDeleted(id);
     tracks=tracks.filter(function(x){return String(x.id)!==String(id)});
     persistTracks(); renderAll();
   }
@@ -2548,9 +2568,9 @@ var $=function(id){return document.getElementById(id)};
     if(!cloudOn) return;
     Promise.all([
       cloudGet('users'), cloudGet('tracks'), cloudGet('news'), cloudGet('artists'),
-      cloudGet('votes'), cloudGet('postpone'), cloudGet('reactions'), cloudGet('notifs')
+      cloudGet('votes'), cloudGet('postpone'), cloudGet('reactions'), cloudGet('notifs'), cloudGet('deleted')
     ]).then(function(arr){
-      var cu=arr[0], ct=arr[1], cn=arr[2], ca=arr[3], cv=arr[4], cp=arr[5], cr=arr[6], cf=arr[7];
+      var cu=arr[0], ct=arr[1], cn=arr[2], ca=arr[3], cv=arr[4], cp=arr[5], cr=arr[6], cf=arr[7], cd=arr[8];
       var changed=false;
       if(cu && typeof cu==='object' && Object.keys(cu).length){
         Object.keys(cu).forEach(function(c){
@@ -2583,14 +2603,15 @@ var $=function(id){return document.getElementById(id)};
           if(!t.cover && L.cover) t.cover=L.cover;
           return t;
         });
+        tracks=tracks.filter(function(t){ return deletedTracks.indexOf(String(t.id))<0; });
         tracks.forEach(function(t){
           if(!t.cover){
-            cloudGet('cover_'+t.id).then(function(cv){ if(cv){ t.cover=cv; renderAll(); } });
+            cloudGet('cover_'+t.id).then(function(cv2){ if(cv2){ t.cover=cv2; renderAll(); } });
           }
         });
         changed=true;
       }
-      else { persistTracks(); }
+      else if(!ct) { persistTracks(); }
       if(cn && cn.length){ news=normalizeNews(cn); changed=true; save('ivlive_news',news); }
       else { cloudPut('news', news); }
       if(ca && ca.length){ artistsList=ca; normalizeArtists(); changed=true; save('ivlive_artists',artistsList); }
@@ -2599,10 +2620,11 @@ var $=function(id){return document.getElementById(id)};
       if(cp){ postponeMap=cp; save('ivlive_postpone',postponeMap); }
       if(cr){ reactions=cr; save('ivlive_reactions',reactions); }
       if(cf){ notifs=cf; save('ivlive_notifs',notifs); }
+      if(cd && cd.length){ deletedTracks=Array.from(new Set((deletedTracks||[]).concat(cd))); save('ivlive_deleted',deletedTracks); }
       if(changed) renderAll();
       if(cloudOn && cloudDb && !window._ivLive){
         window._ivLive=true;
-        ['users','tracks','news','artists','votes','postpone','reactions','notifs'].forEach(function(name){
+        ['users','tracks','news','artists','votes','postpone','reactions','notifs','deleted'].forEach(function(name){
           cloudDb.collection('iv').doc(name).onSnapshot(function(s){
             if(!s.exists) return;
             var d=s.data()||{};
@@ -2622,6 +2644,7 @@ var $=function(id){return document.getElementById(id)};
             }
             if(name==='tracks' && val.length!=null){
               var oldT={}; tracks.forEach(function(t){ oldT[String(t.id)]=t; });
+              if(name==='deleted'){ deletedTracks=Array.from(new Set((deletedTracks||[]).concat(val||[]))); }
               tracks=val.map(function(t){
                 var L=oldT[String(t.id)];
                 if(L){
@@ -2637,7 +2660,8 @@ var $=function(id){return document.getElementById(id)};
             if(name==='postpone') postponeMap=val||{};
             if(name==='reactions') reactions=val||{};
             if(name==='notifs') notifs=val||[];
-            try{ renderAll(); }catch(eR){}
+            if(name==='deleted') deletedTracks=Array.from(new Set((deletedTracks||[]).concat(val||[])));
+            try{ tracks=(tracks||[]).filter(function(t){ return (deletedTracks||[]).indexOf(String(t.id))<0; }); renderAll(); }catch(eR){}
           });
         });
       }
