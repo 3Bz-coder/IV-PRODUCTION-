@@ -1363,7 +1363,8 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
         var slim={};
         Object.keys(payload).forEach(function(c){
           var u=payload[c]||{};
-          slim[c]={name:u.name,bio:u.bio||'',admin:!!u.admin,avatar:'',accent:u.accent||'#e8c36a',icon:u.icon||'dark',pledged:!!u.pledged,ledOn:u.ledOn!==false,ledColor:u.ledColor||'#e8c36a',bannerFade:u.bannerFade||70,nameSize:u.nameSize||26,updatedAt:u.updatedAt||Date.now()};
+          slim[c]={name:u.name,bio:u.bio||'',admin:!!u.admin,avatar:'',accent:u.accent||'#e8c36a',icon:u.icon||'dark',pledged:!!u.pledged,ledOn:u.ledOn!==false,ledColor:u.ledColor||'#e8c36a',bannerFade:u.bannerFade||70,nameSize:u.nameSize||26,updatedAt:+u.updatedAt||0};
+          try{ cloudDb.collection('iv').doc('user_'+c).set({data:{name:slim[c].name,bio:slim[c].bio,admin:slim[c].admin,accent:slim[c].accent,icon:slim[c].icon,pledged:slim[c].pledged,updatedAt:slim[c].updatedAt},updated:slim[c].updatedAt||Date.now()}).catch(function(){}); }catch(eU){}
           if(u.avatar){
             try{ cloudDb.collection('iv').doc('ava_'+c).set({data:u.avatar,updated:Date.now()}).catch(function(){}); }catch(eA){}
           }
@@ -2943,8 +2944,9 @@ var $=function(id){return document.getElementById(id)};
       var name=el.getAttribute('data-n'), code=el.getAttribute('data-code');
       var a=artistsList.find(function(x){return (code&&x.code===code)||x.n===name;})||{n:name,code:code};
       var m=artistMedia(a);
-      $('artName').textContent=m.name;$('artRole').textContent=m.role||a.r||'';
-      var pic=m.avatar, ban=m.banner, uu=users[m.code]||findUserByName(m.name);
+      $('artName').textContent=m.name;
+      var pic=m.avatar, ban=m.banner, uu=users[m.code]||findUserByName(m.name)||findUserByName(m.n);
+      if($('artRole')) $('artRole').textContent=(uu&&uu.bio)||m.role||a.r||'';
 
       var hero=$('artHero');
       if(hero){ hero.style.width='100%'; hero.style.minHeight='230px'; hero.style.display='block'; }
@@ -3752,7 +3754,7 @@ var $=function(id){return document.getElementById(id)};
       normalizeArtists();
       syncArtistPhotos();
       users[profile.code].updatedAt=Date.now();
-      save('ivlive_users',users);
+      persistUsers();
       persistArtists();
       hideForms();updateProfileUI();applyAppIcon(profile.icon);renderArtists();renderHome();
     }
@@ -4058,6 +4060,23 @@ $('pub').onclick=function(){
           if(sc&&users[sc]) enterAs(sc);
         }catch(eS){}
         Object.keys(users).forEach(function(c){
+          cloudGet('user_'+c).then(function(pu){
+            if(pu && typeof pu==='object'){
+              var L=users[c]||{}, rt=+pu.updatedAt||0, lt=+L.updatedAt||0;
+              if(rt>lt || !L.name){
+                if(pu.name) L.name=pu.name;
+                if(pu.bio!=null) L.bio=pu.bio;
+                if(pu.accent) L.accent=pu.accent;
+                if(pu.icon) L.icon=pu.icon;
+                if(pu.admin!=null) L.admin=!!pu.admin;
+                L.updatedAt=Math.max(rt,lt);
+                users[c]=L;
+                if(profile.code===c){ profile.name=L.name||profile.name; profile.bio=L.bio||''; }
+                try{ localStorage.setItem('ivlive_users', JSON.stringify(users)); }catch(e){}
+                updateProfileUI(); renderArtists();
+              }
+            }
+          });
           cloudGet('ava_'+c).then(function(av){
             if(av){ users[c].avatar=av; if(artistsList){ artistsList.forEach(function(a){ if(a.n===users[c].name || a.code===c) a.avatar=av; }); } if(profile.code===c){ profile.avatar=av; } updateProfileUI(); renderArtists(); }
           });
@@ -4101,9 +4120,9 @@ $('pub').onclick=function(){
             var d=s.data()||{};
             var val=d.data;
             if(val==null) return;
-            if(name==='users' && typeof val==='object'){ mergeUsers(val); }
+            if(name==='users' && typeof val==='object'){ mergeUsers(val); try{localStorage.setItem('ivlive_users',JSON.stringify(users))}catch(eU){} }
             if(name==='tracks' && val && val.length){ localSeedOnly=false; mergeTracks(val); }
-            if(name==='news' && val.length!=null){ news=normalizeNews(val); }
+            if(name==='news' && val && val.length!=null){ mergeNews(val); try{localStorage.setItem('ivlive_news',JSON.stringify(news))}catch(eN){} }
             if(name==='artists' && val.length!=null){ mergeArtists(val); }
             if(name==='votes') votesStore=val||{};
             if(name==='postpone') postponeMap=val||{};
@@ -4134,7 +4153,7 @@ $('pub').onclick=function(){
       if(!L){ users[c]=r; return; }
       var rt=+r.updatedAt||0, lt=+L.updatedAt||0;
       if(rt>lt){
-        if(r.name) users[c].name=r.name;
+        if(r.name!=null && r.name!=='') users[c].name=r.name;
         if(r.bio!=null) users[c].bio=r.bio;
         users[c].admin=!!r.admin;
         if(r.accent) users[c].accent=r.accent;
@@ -4145,6 +4164,7 @@ $('pub').onclick=function(){
         users[c].updatedAt=rt;
       } else {
         if(!L.name && r.name) users[c].name=r.name;
+        if((L.bio==null || L.bio==='') && r.bio) users[c].bio=r.bio;
         if(!L.avatar && r.avatar) users[c].avatar=r.avatar;
         if(!L.banner && r.banner) users[c].banner=r.banner;
         users[c].updatedAt=Math.max(rt,lt);
@@ -4244,9 +4264,18 @@ $('pub').onclick=function(){
   function persistUsers(){
     try{ localStorage.setItem('ivlive_users', JSON.stringify(users)); }catch(e){}
     IV_WRITE_TS.users=nowTs();
-    if(!cloudOn) return;
+    if(!cloudOn){ cloudPut('users', users); return; }
+    var myCode=profile&&profile.code;
+    var mySnap=myCode&&users[myCode]?Object.assign({},users[myCode]):null;
     cloudGet('users').then(function(remote){
       if(remote && typeof remote==='object') mergeUsers(remote);
+      if(mySnap && myCode){
+        var L=users[myCode]||{};
+        if((+mySnap.updatedAt||0)>=(+L.updatedAt||0)){
+          users[myCode]=Object.assign({},L,mySnap);
+        }
+      }
+      try{ localStorage.setItem('ivlive_users', JSON.stringify(users)); }catch(e2){}
       cloudPut('users', users);
     }).catch(function(){ cloudPut('users', users); });
   }
