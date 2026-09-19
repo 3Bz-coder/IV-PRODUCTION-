@@ -141,7 +141,40 @@ html[data-theme=dark] .btn.pri,html[data-theme=dark] .mbtn.pri{background:var(--
 .masonry{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .tile{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
 .cover-wrap{position:relative}
-.cover-wrap img{width:100%;aspect-ratio:1;object-fit:cover}
+/* new-track border runner — border-box only, no mask (Safari-safe) */
+@property --newA{
+  syntax:'<angle>';
+  initial-value:0deg;
+  inherits:false;
+}
+.tile.tile-new{
+  position:relative;
+  overflow:hidden;
+  border-radius:16px;
+  border:1.5px solid transparent;
+  background:
+    linear-gradient(var(--card), var(--card)) padding-box,
+    conic-gradient(from var(--newA), transparent 0 62%, #111 78%, #000 86%, transparent 96%) border-box;
+  animation:newAngle 2s linear infinite;
+}
+html[data-theme=dark] .tile.tile-new{
+  background:
+    linear-gradient(var(--card), var(--card)) padding-box,
+    conic-gradient(from var(--newA), transparent 0 62%, #fff 78%, #f0f0f0 86%, transparent 96%) border-box;
+}
+.tile.tile-new .cover-wrap{position:relative;overflow:hidden;border-radius:15px 15px 0 0}
+.tile.tile-new .cover-wrap > img{
+  border-radius:15px 15px 0 0;
+  display:block;
+  width:100%;
+  aspect-ratio:1;
+  object-fit:cover;
+}
+.tile.tile-new > .new-ring{display:none!important}
+.tile.tile-new::after{display:none!important}
+@keyframes newAngle{to{--newA:360deg}}
+
+.cover-wrap img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:16px 16px 0 0}
 .tag-wrap{position:absolute;top:8px;right:8px;display:flex;gap:4px;z-index:1}
 .tag{background:#0009;color:#fff;border-radius:6px;padding:3px 7px;font-size:10px}
 .tag-new{background:#e8c36a;color:#1c1610;border-radius:6px;padding:3px 7px;font-size:10px;font-weight:800}
@@ -2722,7 +2755,9 @@ var $=function(id){return document.getElementById(id)};
       if(opts.canDelete && (profile.admin || String(t.owner)===String(profile.code))){
         del='<button type="button" class="tile-edit" data-edit-track="'+t.id+'">تعديل</button><button type="button" class="tile-del" data-del-track="'+t.id+'">حذف</button>';
       }
-      return '<div class="tile" data-id="'+t.id+'"><div class="cover-wrap">'+del+'<img src="'+t.cover+'" alt=""/><div class="tag-wrap">'+neu+'<div class="tag">'+(t.category||'')+'</div></div>'+chip+'<div class="by-tag">'+esc(artistLine(t))+'</div></div><div class="info"><b>'+esc(t.title)+'</b><div class="stats">'+(t.plays||0)+' استماع · '+(t.likes||0)+' إعجاب</div><small style="margin-top:3px">'+fmtDate(t.date)+'</small></div></div>';
+      var isNew=isNewTrack(t);
+      var ring=isNew?'<svg class="new-ring" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><rect x="1.1" y="1.1" width="97.8" height="97.8" rx="10" ry="10" pathLength="100"/></svg>':'';
+      return '<div class="tile'+(isNew?' tile-new':'')+'" data-id="'+t.id+'">'+ring+'<div class="cover-wrap">'+del+'<img src="'+t.cover+'" alt=""/><div class="tag-wrap">'+neu+'<div class="tag">'+(t.category||'')+'</div></div>'+chip+'<div class="by-tag">'+esc(artistLine(t))+'</div></div><div class="info"><b>'+esc(t.title)+'</b><div class="stats">'+(t.plays||0)+' استماع · '+(t.likes||0)+' إعجاب</div><small style="margin-top:3px">'+fmtDate(t.date)+'</small></div></div>';
     }).join('');
   }
   function hideAwardPop(){var p=document.getElementById('awardPop');if(p)p.remove()}
