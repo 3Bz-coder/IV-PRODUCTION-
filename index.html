@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl" data-theme="light">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=0.9, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
@@ -10,7 +10,7 @@
 <meta name="application-name" content="IV PRODUCTION"/>
 <meta name="theme-color" content="#efe6d6" media="(prefers-color-scheme: light)"/>
 <meta name="theme-color" content="#101018" media="(prefers-color-scheme: dark)"/>
-<title>IV PRODUCTION — 2.0</title>
+<title>IV PRODUCTION</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Mirza:wght@700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="apple-touch-icon" sizes="180x180" href="icon-dark.png" id="appleTouchIcon"/>
@@ -682,100 +682,6 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
 .pf-rail-l .pf-led{margin:1px 0;width:4px;transform-origin:right center;transition:transform .06s linear,opacity .28s ease}
 
 </style>
-
-<style id="iv-v2-safe-ui">
-:root{
-  --iv2-bg:#f3eee2;
-  --iv2-ink:#28231d;
-  --iv2-muted:#82796b;
-  --iv2-line:rgba(47,39,29,.12);
-  --iv2-card:rgba(255,252,245,.78);
-  --iv2-gold:#c69a48;
-  --iv2-shadow:0 18px 55px rgba(55,43,25,.10);
-}
-[data-theme="dark"]{
-  --iv2-bg:#0e0e12;
-  --iv2-ink:#f6f2e9;
-  --iv2-muted:#aaa49a;
-  --iv2-line:rgba(255,255,255,.10);
-  --iv2-card:rgba(25,25,31,.80);
-  --iv2-gold:#d3ad62;
-  --iv2-shadow:0 20px 65px rgba(0,0,0,.30);
-}
-html{scroll-behavior:smooth}
-body{
-  background:
-    radial-gradient(720px 380px at 92% -5%,rgba(198,154,72,.10),transparent 64%),
-    radial-gradient(650px 420px at 0% 45%,rgba(120,96,170,.045),transparent 68%),
-    var(--iv2-bg);
-  color:var(--iv2-ink);
-}
-button,.btn,input,textarea,select{font-family:inherit}
-button,.btn{
-  -webkit-tap-highlight-color:transparent;
-  transition:transform .15s ease,box-shadow .18s ease,background .18s ease,border-color .18s ease,opacity .18s ease;
-}
-button:active,.btn:active{transform:scale(.975)}
-button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{
-  outline:2px solid var(--iv2-gold);outline-offset:2px
-}
-.card,.panel,.modal-card,.pf-card,.admin-sec,.fav-card,.track-card{
-  border-color:var(--iv2-line)!important;
-}
-.fi,input,textarea,select{
-  border-color:var(--iv2-line)!important;
-}
-.dock{
-  backdrop-filter:blur(22px) saturate(1.05);
-  -webkit-backdrop-filter:blur(22px) saturate(1.05);
-  box-shadow:0 -8px 35px rgba(50,40,25,.07);
-}
-.dock button.on{box-shadow:0 8px 25px rgba(198,154,72,.11)}
-.enter,.btn.pri,.btn.primary{box-shadow:0 9px 26px rgba(198,154,72,.16)}
-.phero,#artHero,#phero{box-shadow:var(--iv2-shadow)}
-@media(max-width:760px){
-  .dock{
-    left:10px!important;right:10px!important;width:auto!important;
-    border-radius:22px!important;
-    padding-bottom:env(safe-area-inset-bottom)!important;
-  }
-  .wrap{padding-left:12px!important;padding-right:12px!important}
-  .phero,#artHero,#phero{border-radius:24px}
-  .modal,.modal-card{border-radius:24px!important}
-}
-@media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{
-    animation-duration:.01ms!important;animation-iteration-count:1!important;
-    transition-duration:.01ms!important;scroll-behavior:auto!important
-  }
-}
-.iv2-cloud-pill{
-  position:fixed;
-  left:18px;
-  bottom:calc(92px + env(safe-area-inset-bottom));
-  z-index:250;
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:9px 13px;
-  border:1px solid var(--iv2-line);
-  border-radius:999px;
-  background:var(--iv2-card);
-  color:var(--iv2-muted);
-  box-shadow:var(--iv2-shadow);
-  backdrop-filter:blur(18px);
-  -webkit-backdrop-filter:blur(18px);
-  font-size:11px;
-  direction:rtl;
-  pointer-events:none;
-}
-.iv2-cloud-dot{width:7px;height:7px;border-radius:50%;background:#c69a48;box-shadow:0 0 12px currentColor}
-.iv2-cloud-pill.ok{color:#667766}
-.iv2-cloud-pill.ok .iv2-cloud-dot{background:#718c73}
-.iv2-cloud-pill.err{color:#9b5c5c}
-.iv2-cloud-pill.err .iv2-cloud-dot{background:#b86b6b}
-</style>
-
 </head>
 <body>
 <button type="button" class="exit-demo" id="exitDemo">خروج</button>
@@ -4954,45 +4860,5 @@ $('pub').onclick=function(){
 })();
 
 </script>
-
-<script id="iv-v2-cloud-monitor">
-(function(){
-  function install(){
-    if(document.getElementById('iv2CloudPill')) return;
-    var p=document.createElement('div');
-    p.id='iv2CloudPill';
-    p.className='iv2-cloud-pill';
-    p.innerHTML='<span class="iv2-cloud-dot"></span><span>السحابة: جاري الاتصال</span>';
-    document.body.appendChild(p);
-
-    function setState(cls,text){
-      p.className='iv2-cloud-pill '+cls;
-      var t=p.querySelector('span:last-child');
-      if(t)t.textContent=text;
-    }
-
-    function check(){
-      try{
-        if(typeof cloudOn!=='undefined' && cloudOn && typeof cloudDb!=='undefined' && cloudDb){
-          cloudDb.collection('iv').doc('users').get().then(function(){
-            setState('ok','السحابة متصلة');
-          }).catch(function(){
-            setState('err','السحابة غير متاحة');
-          });
-        }else{
-          setState('err','السحابة غير متاحة');
-        }
-      }catch(e){
-        setState('err','السحابة غير متاحة');
-      }
-    }
-    check();
-    setInterval(check,60000);
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);
-  else install();
-})();
-</script>
-
 </body>
 </html>
