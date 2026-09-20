@@ -1774,7 +1774,6 @@ var $=function(id){return document.getElementById(id)};
   function getTrackAwards(t){
     return (t && t.awards && t.awards.length) ? t.awards.slice() : [];
   }
-  function artistNames(t){return (t&&t.artists&&t.artists.length)?t.artists.join(' · '):((t&&t.artist)||'');}
   function resolveUserName(codeOrName){
     if(!codeOrName) return '';
     if(users[codeOrName] && users[codeOrName].name) return users[codeOrName].name;
@@ -1784,21 +1783,33 @@ var $=function(id){return document.getElementById(id)};
   }
   function artistNames(t){
     if(!t) return [];
-    if(t.ownerCodes && t.ownerCodes.length){
-      return t.ownerCodes.map(resolveUserName).filter(Boolean);
+    var codes=[];
+    if(t.ownerCodes && t.ownerCodes.length) codes=t.ownerCodes.slice();
+    else if(t.owners && t.owners.length) codes=t.owners.slice();
+    else if(t.owner) codes=[t.owner];
+    if(codes.length){
+      var names=[];
+      codes.forEach(function(c){
+        var nm=(users[c]&&users[c].name)||'';
+        if(nm && names.indexOf(nm)<0) names.push(nm);
+      });
+      if(names.length) return names;
     }
-    if(t.owners && t.owners.length){
-      return t.owners.map(resolveUserName).filter(Boolean);
+    if(t.artists && t.artists.length){
+      return t.artists.map(function(n){
+        // if stored name matches a user code by current name, use live name
+        var k=Object.keys(users||{}).find(function(c){ return users[c]&&users[c].name===n; });
+        return k?(users[k].name||n):n;
+      });
     }
-    if(t.owner && users[t.owner] && users[t.owner].name){
-      var names=[users[t.owner].name];
-      if(t.artists && t.artists.length>1){
-        t.artists.forEach(function(n){ if(n && names.indexOf(n)<0 && names.indexOf(resolveUserName(n))<0) names.push(resolveUserName(n)); });
-      }
-      return names;
+    if(t.artist){
+      var parts=String(t.artist).split(/\s*·\s*/);
+      return parts.map(function(n){
+        var k=Object.keys(users||{}).find(function(c){ return users[c]&&(users[c].name===n); });
+        // also: any track.owner that renamed away from this string — if single owner use live
+        return k?(users[k].name||n):n;
+      });
     }
-    if(t.artists && t.artists.length) return t.artists.map(resolveUserName);
-    if(t.artist) return [resolveUserName(t.artist)];
     return [];
   }
   function artistLine(t){var n=artistNames(t).join(' · ');return n?('‎By '+n):''}
@@ -3913,7 +3924,8 @@ var $=function(id){return document.getElementById(id)};
     if($('tt')) $('tt').value=t.title||'';
     if($('ly')) $('ly').value=t.lyrics||'';
     cover=t.cover||'';
-    if($('cp') && cover) $('cp').innerHTML='<img src="'+cover+'" style="width:72px;height:72px;object-fit:cover;border-radius:10px"/>';
+    if($('cf')) $('cf').value='';
+    if($('cp') && cover) $('cp').innerHTML='<img src="'+cover+'" style="width:72px;height:72px;object-fit:cover;border-radius:10px"/><div style="font-size:11px;color:var(--mute);margin-top:6px">يمكنك اختيار صورة غلاف جديدة من الأعلى</div>';
     document.querySelectorAll('#cats .cat').forEach(function(c){
       c.classList.toggle('on', c.getAttribute('data-c')===(t.category||''));
     });
@@ -3952,17 +3964,33 @@ $('pub').onclick=function(){
       cur.title=t;
       cur.lyrics=(($('ly')&&$('ly').value)||'').trim();
       cur.lyricSync=!!($('lySyncOn')&&$('lySyncOn').checked);
-      if(cover) cur.cover=cover;
       if(catEl) cur.category=catEl.getAttribute('data-c')||cur.category;
       cur.old=!!window._ivOldOn;
+      var od=($('oldDate')&&$('oldDate').value)||'';
+      if(od) cur.date=od;
       cur.updatedAt=Date.now();
-      persistTracks();
-      resetPublishForm();
-      hideForms();
-      updateProfileUI();
-      renderHome();
-      renderSongs();
-      toast('تم حفظ التعديل ومزامنته دون المساس بالإحصائيات');
+      function finishEdit(newCover){
+        if(newCover){
+          cur.cover=newCover;
+          try{
+            if(cloudOn&&cloudDb) cloudDb.collection('iv').doc('cover_'+cur.id).set({data:newCover,updated:Date.now()}).catch(function(){});
+          }catch(eC){}
+        }
+        var ns=artistNames(cur);
+        if(ns.length){ cur.artists=ns; cur.artist=ns.join(' · '); }
+        persistTracks();
+        resetPublishForm();
+        hideForms();
+        updateProfileUI();
+        renderHome();
+        renderSongs();
+        toast('تم حفظ التعديل ومزامنته دون المساس بالإحصائيات');
+      }
+      if(cover && cover!==cur.cover && String(cover).indexOf('data:')===0){
+        shrink(cover, 480, function(small){ finishEdit(small||cover); });
+      } else {
+        finishEdit(cover && cover!==cur.cover ? cover : '');
+      }
       return;
     }
     if(!mp3){toast('اختر ملف الصوت');return}if(!t){toast('اكتب العنوان');return}if(!cover){toast('اختر غلافاً');return}
@@ -4262,7 +4290,19 @@ $('pub').onclick=function(){
       if(!L){ users[c]=r; return; }
       var rt=+r.updatedAt||0, lt=+L.updatedAt||0;
       if(rt>lt){
+        var prevName=L.name||'';
         if(r.name!=null && r.name!=='') users[c].name=r.name;
+        if(prevName && r.name && prevName!==r.name){
+          (tracks||[]).forEach(function(tr){
+            var hit=false;
+            if(tr.owner===c || (tr.ownerCodes&&tr.ownerCodes.indexOf(c)>=0) || (tr.owners&&tr.owners.indexOf(c)>=0)) hit=true;
+            if(tr.artist===prevName){ tr.artist=r.name; hit=true; }
+            if(tr.artists){
+              tr.artists=tr.artists.map(function(n){ if(n===prevName){ hit=true; return r.name; } return n; });
+            }
+            if(hit){ var ns=artistNames(tr); if(ns.length){ tr.artists=ns; tr.artist=ns.join(' · '); } }
+          });
+        }
         if(r.bio!=null) users[c].bio=r.bio;
         users[c].admin=!!r.admin;
         if(r.accent) users[c].accent=r.accent;
