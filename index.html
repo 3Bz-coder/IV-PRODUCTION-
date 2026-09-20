@@ -683,94 +683,97 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
 
 </style>
 
-<style id="iv-v2-design-system">
+<style id="iv-v2-safe-ui">
 :root{
-  --iv2-bg:#f4efe3;
-  --iv2-bg2:#eee7d8;
+  --iv2-bg:#f3eee2;
   --iv2-ink:#28231d;
-  --iv2-muted:#80776a;
-  --iv2-line:rgba(54,45,34,.12);
-  --iv2-card:rgba(255,252,245,.72);
-  --iv2-card-strong:rgba(255,252,245,.92);
-  --iv2-gold:#c79b45;
-  --iv2-shadow:0 16px 45px rgba(65,52,32,.10);
+  --iv2-muted:#82796b;
+  --iv2-line:rgba(47,39,29,.12);
+  --iv2-card:rgba(255,252,245,.78);
+  --iv2-gold:#c69a48;
+  --iv2-shadow:0 18px 55px rgba(55,43,25,.10);
 }
 [data-theme="dark"]{
   --iv2-bg:#0e0e12;
-  --iv2-bg2:#15151b;
-  --iv2-ink:#f5f1e8;
+  --iv2-ink:#f6f2e9;
   --iv2-muted:#aaa49a;
   --iv2-line:rgba(255,255,255,.10);
-  --iv2-card:rgba(24,24,30,.72);
-  --iv2-card-strong:rgba(24,24,30,.94);
-  --iv2-shadow:0 18px 55px rgba(0,0,0,.28);
+  --iv2-card:rgba(25,25,31,.80);
+  --iv2-gold:#d3ad62;
+  --iv2-shadow:0 20px 65px rgba(0,0,0,.30);
 }
 html{scroll-behavior:smooth}
 body{
   background:
-    radial-gradient(800px 420px at 90% -8%,rgba(199,155,69,.11),transparent 62%),
-    radial-gradient(700px 420px at 0% 42%,rgba(117,93,168,.055),transparent 65%),
+    radial-gradient(720px 380px at 92% -5%,rgba(198,154,72,.10),transparent 64%),
+    radial-gradient(650px 420px at 0% 45%,rgba(120,96,170,.045),transparent 68%),
     var(--iv2-bg);
   color:var(--iv2-ink);
 }
 button,.btn,input,textarea,select{font-family:inherit}
 button,.btn{
   -webkit-tap-highlight-color:transparent;
-  transition:transform .16s ease,box-shadow .18s ease,background .18s ease,border-color .18s ease,opacity .18s ease;
+  transition:transform .15s ease,box-shadow .18s ease,background .18s ease,border-color .18s ease,opacity .18s ease;
 }
 button:active,.btn:active{transform:scale(.975)}
 button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{
   outline:2px solid var(--iv2-gold);outline-offset:2px
 }
-.card,.panel,.modal-card,.pf-card,.admin-sec,.fav-card,.track-card,.song,.artist-card,.event-card{
+.card,.panel,.modal-card,.pf-card,.admin-sec,.fav-card,.track-card{
   border-color:var(--iv2-line)!important;
 }
-.fi,.search-input,input,textarea,select{
+.fi,input,textarea,select{
   border-color:var(--iv2-line)!important;
-  background:var(--iv2-card-strong)!important;
 }
 .dock{
-  backdrop-filter:blur(24px) saturate(1.05);
-  -webkit-backdrop-filter:blur(24px) saturate(1.05);
-  box-shadow:0 -8px 35px rgba(70,56,36,.07);
+  backdrop-filter:blur(22px) saturate(1.05);
+  -webkit-backdrop-filter:blur(22px) saturate(1.05);
+  box-shadow:0 -8px 35px rgba(50,40,25,.07);
 }
-.dock button.on{
-  box-shadow:0 8px 24px rgba(199,155,69,.10);
-}
-.phero,#artHero,#phero{
-  box-shadow:var(--iv2-shadow);
-}
-.btn.pri,.btn.primary{
-  box-shadow:0 9px 24px rgba(199,155,69,.18);
-}
-.masonry{gap:14px}
+.dock button.on{box-shadow:0 8px 25px rgba(198,154,72,.11)}
+.enter,.btn.pri,.btn.primary{box-shadow:0 9px 26px rgba(198,154,72,.16)}
+.phero,#artHero,#phero{box-shadow:var(--iv2-shadow)}
 @media(max-width:760px){
-  .wrap{padding-left:12px!important;padding-right:12px!important}
   .dock{
     left:10px!important;right:10px!important;width:auto!important;
     border-radius:22px!important;
     padding-bottom:env(safe-area-inset-bottom)!important;
   }
-  .dock button{min-width:0}
+  .wrap{padding-left:12px!important;padding-right:12px!important}
   .phero,#artHero,#phero{border-radius:24px}
-  .modal-card,.sheet,.panel{border-radius:24px!important}
+  .modal,.modal-card{border-radius:24px!important}
 }
 @media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  *,*::before,*::after{
+    animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;scroll-behavior:auto!important
+  }
 }
-.iv2-cloud-status{
-  position:fixed;left:18px;bottom:calc(92px + env(safe-area-inset-bottom));
-  z-index:250;display:flex;align-items:center;gap:9px;
-  padding:9px 13px;border:1px solid var(--iv2-line);
-  border-radius:999px;background:var(--iv2-card-strong);
-  color:var(--iv2-muted);box-shadow:var(--iv2-shadow);
-  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
-  font-size:11px;direction:rtl;pointer-events:none;
+.iv2-cloud-pill{
+  position:fixed;
+  left:18px;
+  bottom:calc(92px + env(safe-area-inset-bottom));
+  z-index:250;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:9px 13px;
+  border:1px solid var(--iv2-line);
+  border-radius:999px;
+  background:var(--iv2-card);
+  color:var(--iv2-muted);
+  box-shadow:var(--iv2-shadow);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  font-size:11px;
+  direction:rtl;
+  pointer-events:none;
 }
-.iv2-cloud-dot{width:7px;height:7px;border-radius:50%;background:#9d9d9d;box-shadow:0 0 12px currentColor}
-.iv2-cloud-status.ok{color:#667766}.iv2-cloud-status.ok .iv2-cloud-dot{background:#718c73}
-.iv2-cloud-status.warn{color:#8b7449}.iv2-cloud-status.warn .iv2-cloud-dot{background:#c79b45}
-.iv2-cloud-status.err{color:#9b5c5c}.iv2-cloud-status.err .iv2-cloud-dot{background:#b86b6b}
+.iv2-cloud-dot{width:7px;height:7px;border-radius:50%;background:#c69a48;box-shadow:0 0 12px currentColor}
+.iv2-cloud-pill.ok{color:#667766}
+.iv2-cloud-pill.ok .iv2-cloud-dot{background:#718c73}
+.iv2-cloud-pill.err{color:#9b5c5c}
+.iv2-cloud-pill.err .iv2-cloud-dot{background:#b86b6b}
 </style>
 
 </head>
@@ -4274,8 +4277,7 @@ $('pub').onclick=function(){
 
   function applyCloud(){
     if(!cloudOn) return;
-    function readAll(attempt){
-      return Promise.all([
+    Promise.all([
       cloudGet('users'), cloudGet('tracks'), cloudGet('news'), cloudGet('artists'),
       cloudGet('votes'), cloudGet('postpone'), cloudGet('reactions'), cloudGet('notifs'), cloudGet('deleted'), cloudGet('favs')
     ]).then(function(arr){
@@ -4363,13 +4365,7 @@ $('pub').onclick=function(){
           });
         });
       }
-    }).catch(function(){
-      if(attempt<2){
-        setTimeout(function(){ readAll(attempt+1); }, 1200);
-      }
-    });
-    }
-    readAll(1);
+    }).catch(function(){});
   }
 
   /* ===== Sync + UX extras ===== */
@@ -4954,35 +4950,49 @@ $('pub').onclick=function(){
     try{ ensureAudioGraph(); startAmbient(($('pfCover')&&$('pfCover').src)|| (currentTrack&&currentTrack.cover)); }catch(e){}
   });
 
-
-  /* ===== IV 2.0 Cloud Safety Monitor ===== */
-  (function(){
-    var badge=document.createElement('div');
-    badge.className='iv2-cloud-status warn';
-    badge.innerHTML='<span class="iv2-cloud-dot"></span><span>جاري فحص السحابة…</span>';
-    badge.id='iv2CloudStatus';
-    document.body.appendChild(badge);
-
-    function setState(cls,text){
-      badge.className='iv2-cloud-status '+cls;
-      var s=badge.querySelector('span:last-child');
-      if(s)s.textContent=text;
-    }
-    function check(){
-      if(!cloudOn || !cloudDb){ setState('err','السحابة غير متاحة'); return; }
-      cloudDb.collection('iv').doc('users').get().then(function(){
-        setState('ok','السحابة متصلة');
-      }).catch(function(){
-        setState('err','تعذر الوصول للسحابة');
-      });
-    }
-    check();
-    setInterval(check,45000);
-  })();
-
   applyCloud();
 })();
 
 </script>
+
+<script id="iv-v2-cloud-monitor">
+(function(){
+  function install(){
+    if(document.getElementById('iv2CloudPill')) return;
+    var p=document.createElement('div');
+    p.id='iv2CloudPill';
+    p.className='iv2-cloud-pill';
+    p.innerHTML='<span class="iv2-cloud-dot"></span><span>السحابة: جاري الاتصال</span>';
+    document.body.appendChild(p);
+
+    function setState(cls,text){
+      p.className='iv2-cloud-pill '+cls;
+      var t=p.querySelector('span:last-child');
+      if(t)t.textContent=text;
+    }
+
+    function check(){
+      try{
+        if(typeof cloudOn!=='undefined' && cloudOn && typeof cloudDb!=='undefined' && cloudDb){
+          cloudDb.collection('iv').doc('users').get().then(function(){
+            setState('ok','السحابة متصلة');
+          }).catch(function(){
+            setState('err','السحابة غير متاحة');
+          });
+        }else{
+          setState('err','السحابة غير متاحة');
+        }
+      }catch(e){
+        setState('err','السحابة غير متاحة');
+      }
+    }
+    check();
+    setInterval(check,60000);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);
+  else install();
+})();
+</script>
+
 </body>
 </html>
