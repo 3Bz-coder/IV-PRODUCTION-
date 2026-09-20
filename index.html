@@ -683,56 +683,94 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
 
 </style>
 
-<style id="iv-v2-modern-ui">
+<style id="iv-v2-design-system">
 :root{
-  --v2-bg:#0a0b0f; --v2-surface:rgba(20,22,29,.82); --v2-surface2:rgba(28,31,40,.72);
-  --v2-border:rgba(255,255,255,.09); --v2-text:#f7f7f4; --v2-muted:#a6a9b4;
-  --v2-accent:#e8c36a; --v2-accent2:#b89545; --v2-shadow:0 20px 70px rgba(0,0,0,.34);
+  --iv2-bg:#f4efe3;
+  --iv2-bg2:#eee7d8;
+  --iv2-ink:#28231d;
+  --iv2-muted:#80776a;
+  --iv2-line:rgba(54,45,34,.12);
+  --iv2-card:rgba(255,252,245,.72);
+  --iv2-card-strong:rgba(255,252,245,.92);
+  --iv2-gold:#c79b45;
+  --iv2-shadow:0 16px 45px rgba(65,52,32,.10);
+}
+[data-theme="dark"]{
+  --iv2-bg:#0e0e12;
+  --iv2-bg2:#15151b;
+  --iv2-ink:#f5f1e8;
+  --iv2-muted:#aaa49a;
+  --iv2-line:rgba(255,255,255,.10);
+  --iv2-card:rgba(24,24,30,.72);
+  --iv2-card-strong:rgba(24,24,30,.94);
+  --iv2-shadow:0 18px 55px rgba(0,0,0,.28);
 }
 html{scroll-behavior:smooth}
 body{
   background:
-    radial-gradient(900px 500px at 85% -10%,rgba(232,195,106,.08),transparent 60%),
-    radial-gradient(700px 500px at 0% 40%,rgba(108,92,231,.07),transparent 60%),
-    var(--v2-bg);
+    radial-gradient(800px 420px at 90% -8%,rgba(199,155,69,.11),transparent 62%),
+    radial-gradient(700px 420px at 0% 42%,rgba(117,93,168,.055),transparent 65%),
+    var(--iv2-bg);
+  color:var(--iv2-ink);
 }
 button,.btn,input,textarea,select{font-family:inherit}
-button,.btn{transition:transform .16s ease,background .16s ease,border-color .16s ease,box-shadow .16s ease}
+button,.btn{
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .16s ease,box-shadow .18s ease,background .18s ease,border-color .18s ease,opacity .18s ease;
+}
 button:active,.btn:active{transform:scale(.975)}
 button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{
-  outline:2px solid var(--v2-accent);outline-offset:2px
+  outline:2px solid var(--iv2-gold);outline-offset:2px
 }
-.card,.panel,.modal-card,.pf-card,.admin-sec,.fav-card,.track-card{
-  border-color:var(--v2-border)!important;
-  box-shadow:var(--v2-shadow);
+.card,.panel,.modal-card,.pf-card,.admin-sec,.fav-card,.track-card,.song,.artist-card,.event-card{
+  border-color:var(--iv2-line)!important;
 }
-.layer{backdrop-filter:blur(18px)}
-#app,.wrap{max-width:1480px;margin-inline:auto}
+.fi,.search-input,input,textarea,select{
+  border-color:var(--iv2-line)!important;
+  background:var(--iv2-card-strong)!important;
+}
+.dock{
+  backdrop-filter:blur(24px) saturate(1.05);
+  -webkit-backdrop-filter:blur(24px) saturate(1.05);
+  box-shadow:0 -8px 35px rgba(70,56,36,.07);
+}
+.dock button.on{
+  box-shadow:0 8px 24px rgba(199,155,69,.10);
+}
+.phero,#artHero,#phero{
+  box-shadow:var(--iv2-shadow);
+}
+.btn.pri,.btn.primary{
+  box-shadow:0 9px 24px rgba(199,155,69,.18);
+}
+.masonry{gap:14px}
 @media(max-width:760px){
-  #app,.wrap{width:100%;max-width:none}
-  .dock{left:10px!important;right:10px!important;width:auto!important;border-radius:20px!important}
-  .iv-toast{left:12px!important;right:12px!important}
+  .wrap{padding-left:12px!important;padding-right:12px!important}
+  .dock{
+    left:10px!important;right:10px!important;width:auto!important;
+    border-radius:22px!important;
+    padding-bottom:env(safe-area-inset-bottom)!important;
+  }
+  .dock button{min-width:0}
+  .phero,#artHero,#phero{border-radius:24px}
+  .modal-card,.sheet,.panel{border-radius:24px!important}
 }
-.iv-v2-sync{
-  position:fixed;left:14px;bottom:calc(86px + env(safe-area-inset-bottom));z-index:999;
-  display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--v2-border);
-  background:rgba(15,17,22,.82);backdrop-filter:blur(18px);border-radius:999px;
-  color:var(--v2-muted);font-size:11px;box-shadow:0 10px 35px rgba(0,0,0,.28);direction:rtl;
-  transition:.25s ease;
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
-.iv-v2-sync.ok{color:#dfeadf}.iv-v2-sync.warn{color:#f0d79a}.iv-v2-sync.err{color:#f0a5a5}
-.iv-v2-dot{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 12px currentColor}
-.iv-v2-sync button{border:0;background:transparent;color:inherit;padding:0 2px;cursor:pointer}
-.iv-v2-cloud{
-  position:fixed;inset:auto 14px calc(135px + env(safe-area-inset-bottom)) 14px;z-index:998;
-  max-width:520px;margin-inline:auto;background:rgba(15,17,22,.96);border:1px solid var(--v2-border);
-  border-radius:22px;padding:16px;box-shadow:0 30px 90px rgba(0,0,0,.5);display:none;direction:rtl
+.iv2-cloud-status{
+  position:fixed;left:18px;bottom:calc(92px + env(safe-area-inset-bottom));
+  z-index:250;display:flex;align-items:center;gap:9px;
+  padding:9px 13px;border:1px solid var(--iv2-line);
+  border-radius:999px;background:var(--iv2-card-strong);
+  color:var(--iv2-muted);box-shadow:var(--iv2-shadow);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  font-size:11px;direction:rtl;pointer-events:none;
 }
-.iv-v2-cloud.open{display:block}
-.iv-v2-cloud h3{margin:0 0 8px}.iv-v2-cloud p{color:var(--v2-muted);font-size:12px;line-height:1.8}
-.iv-v2-row{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:10px}
-.iv-v2-btn{border:1px solid var(--v2-border);background:var(--v2-surface2);color:var(--v2-text);border-radius:12px;padding:9px 12px;cursor:pointer}
-.iv-v2-btn.primary{background:var(--v2-accent);color:#17130b;border-color:transparent;font-weight:800}
+.iv2-cloud-dot{width:7px;height:7px;border-radius:50%;background:#9d9d9d;box-shadow:0 0 12px currentColor}
+.iv2-cloud-status.ok{color:#667766}.iv2-cloud-status.ok .iv2-cloud-dot{background:#718c73}
+.iv2-cloud-status.warn{color:#8b7449}.iv2-cloud-status.warn .iv2-cloud-dot{background:#c79b45}
+.iv2-cloud-status.err{color:#9b5c5c}.iv2-cloud-status.err .iv2-cloud-dot{background:#b86b6b}
 </style>
 
 </head>
@@ -4236,7 +4274,8 @@ $('pub').onclick=function(){
 
   function applyCloud(){
     if(!cloudOn) return;
-    Promise.all([
+    function readAll(attempt){
+      return Promise.all([
       cloudGet('users'), cloudGet('tracks'), cloudGet('news'), cloudGet('artists'),
       cloudGet('votes'), cloudGet('postpone'), cloudGet('reactions'), cloudGet('notifs'), cloudGet('deleted'), cloudGet('favs')
     ]).then(function(arr){
@@ -4324,7 +4363,13 @@ $('pub').onclick=function(){
           });
         });
       }
-    }).catch(function(){});
+    }).catch(function(){
+      if(attempt<2){
+        setTimeout(function(){ readAll(attempt+1); }, 1200);
+      }
+    });
+    }
+    readAll(1);
   }
 
   /* ===== Sync + UX extras ===== */
@@ -4909,300 +4954,35 @@ $('pub').onclick=function(){
     try{ ensureAudioGraph(); startAmbient(($('pfCover')&&$('pfCover').src)|| (currentTrack&&currentTrack.cover)); }catch(e){}
   });
 
+
+  /* ===== IV 2.0 Cloud Safety Monitor ===== */
+  (function(){
+    var badge=document.createElement('div');
+    badge.className='iv2-cloud-status warn';
+    badge.innerHTML='<span class="iv2-cloud-dot"></span><span>جاري فحص السحابة…</span>';
+    badge.id='iv2CloudStatus';
+    document.body.appendChild(badge);
+
+    function setState(cls,text){
+      badge.className='iv2-cloud-status '+cls;
+      var s=badge.querySelector('span:last-child');
+      if(s)s.textContent=text;
+    }
+    function check(){
+      if(!cloudOn || !cloudDb){ setState('err','السحابة غير متاحة'); return; }
+      cloudDb.collection('iv').doc('users').get().then(function(){
+        setState('ok','السحابة متصلة');
+      }).catch(function(){
+        setState('err','تعذر الوصول للسحابة');
+      });
+    }
+    check();
+    setInterval(check,45000);
+  })();
+
   applyCloud();
 })();
 
 </script>
-
-<script id="iv-v2-cloud-sync">
-(function(){
-  'use strict';
-
-  /*
-   IV PRODUCTION 2.0 — Cloud Sync Layer
-   - Firebase project: same project as the existing site
-   - New namespace: iv_v2
-   - Firestore is the source of truth for synchronized JSON state
-   - localStorage remains a fast local cache/preferences layer
-   - Every device gets realtime snapshots through onSnapshot
-   - Writes are debounced and carry revision metadata
-   - Existing iv / iv_audio data is left untouched for backward compatibility
-  */
-
-  var FB_CONFIG = {
-    apiKey:"AIzaSyCZhdmHRJ_pk8uAoNwqpkLNBYLUnW4DfrI",
-    authDomain:"iv-production-5aa6f.firebaseapp.com",
-    projectId:"iv-production-5aa6f",
-    storageBucket:"iv-production-5aa6f.firebasestorage.app",
-    messagingSenderId:"872278604148",
-    appId:"1:872278604148:web:6fc92634d0fe20f66d1421"
-  };
-
-  var CLOUD_KEYS = [
-    'ivlive_users','ivlive_tracks','ivlive_news','ivlive_artists','ivlive_votes',
-    'ivlive_postpone','ivlive_reactions','ivlive_notifs','ivlive_plays',
-    'ivlive_deleted','ivlive_favs'
-  ];
-
-  var db=null, connected=false, unsub=null, timer=null, applying=false, ready=false;
-  var pending={};
-  var localDeviceId=localStorage.getItem('iv_v2_device_id');
-  if(!localDeviceId){
-    localDeviceId='d_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,10);
-    localStorage.setItem('iv_v2_device_id',localDeviceId);
-  }
-
-  function el(id){return document.getElementById(id)}
-  function status(kind,msg){
-    var s=el('ivV2Sync');
-    if(!s)return;
-    s.className='iv-v2-sync '+kind;
-    var t=s.querySelector('[data-sync-text]');
-    if(t)t.textContent=msg;
-  }
-  function toast(msg){
-    try{ if(typeof window.toast==='function'){window.toast(msg);return;} }catch(e){}
-    var s=el('ivV2Sync'); if(s){status('warn',msg);setTimeout(function(){status('ok','متصل بالسحابة')},2600)}
-  }
-  function now(){return Date.now()}
-  function safeParse(v){
-    try{return JSON.parse(v)}catch(e){return null}
-  }
-  function getLocal(key){
-    try{return safeParse(localStorage.getItem(key)||'null')}catch(e){return null}
-  }
-  function setLocal(key,val){
-    applying=true;
-    try{localStorage.setItem(key,JSON.stringify(val))}catch(e){}
-    applying=false;
-  }
-
-  function ensureFirebase(){
-    try{
-      if(!window.firebase)return false;
-      if(!firebase.apps.length)firebase.initializeApp(FB_CONFIG);
-      db=firebase.firestore();
-      connected=true;
-      return true;
-    }catch(e){
-      connected=false;
-      return false;
-    }
-  }
-
-  function currentUserCode(){
-    try{
-      var s=getLocal('ivlive_session');
-      return s && s.code ? String(s.code) : 'guest';
-    }catch(e){return 'guest'}
-  }
-
-  function stateRef(){
-    return db.collection('iv_v2').doc('state');
-  }
-
-  function pack(){
-    var data={};
-    CLOUD_KEYS.forEach(function(k){
-      var v=getLocal(k);
-      if(v!==null) data[k]=v;
-    });
-    return data;
-  }
-
-  function fingerprint(obj){
-    try{
-      var s=JSON.stringify(obj);
-      var h=0;
-      for(var i=0;i<s.length;i++)h=((h<<5)-h+s.charCodeAt(i))|0;
-      return String(h);
-    }catch(e){return ''}
-  }
-
-  function localMeta(){
-    return getLocal('iv_v2_meta')||{};
-  }
-  function saveMeta(m){setLocal('iv_v2_meta',m)}
-
-  function mergeState(local, cloud){
-    /*
-      Conservative merge:
-      - maps (users/favs/reactions/plays/deleted/postpone/notifs) merge by key/id
-      - arrays of tracks/news/artists are unioned by stable id/name
-      - cloud remains authoritative when the same object has a newer updatedAt/createdAt
-      This avoids a second device erasing another device's changes.
-    */
-    var out={}, keys={};
-    Object.keys(local||{}).concat(Object.keys(cloud||{})).forEach(function(k){keys[k]=1});
-    Object.keys(keys).forEach(function(k){
-      var a=local?local[k]:null, b=cloud?cloud[k]:null;
-      if(a==null){out[k]=b;return}
-      if(b==null){out[k]=a;return}
-
-      if(Array.isArray(a)&&Array.isArray(b)){
-        var map={}, order=[];
-        function add(x,side){
-          if(!x)return;
-          var id=(typeof x==='object')?(x.id!=null?String(x.id):(x.code!=null?String(x.code):JSON.stringify(x))):String(x);
-          if(!map[id]){map[id]=x;order.push(id)}
-          else if(typeof x==='object' && typeof map[id]==='object'){
-            var xt=Number(x.updatedAt||x.createdAt||0), mt=Number(map[id].updatedAt||map[id].createdAt||0);
-            if(xt>mt)map[id]=x;
-          }
-        }
-        a.forEach(function(x){add(x,'l')}); b.forEach(function(x){add(x,'c')});
-        out[k]=order.map(function(id){return map[id]});
-      }else if(a&&b&&typeof a==='object'&&typeof b==='object'){
-        var o={}; Object.keys(a).forEach(function(x){o[x]=a[x]});
-        Object.keys(b).forEach(function(x){
-          if(!(x in o)){o[x]=b[x];return}
-          var at=Number(a[x]&&a[x].updatedAt||0), bt=Number(b[x]&&b[x].updatedAt||0);
-          if(bt>=at)o[x]=b[x];
-        });
-        out[k]=o;
-      }else{
-        out[k]=b;
-      }
-    });
-    return out;
-  }
-
-  function writeCloud(){
-    if(!connected||!ready||applying)return;
-    clearTimeout(timer);
-    timer=setTimeout(function(){
-      var local=pack(), meta=localMeta();
-      var rev=Number(meta.rev||0)+1;
-      var payload={
-        schema:2,rev:rev,updatedAt:now(),updatedBy:localDeviceId,
-        updatedFor:currentUserCode(),data:local
-      };
-      stateRef().set(payload,{merge:false}).then(function(){
-        meta.rev=rev;meta.lastPush=payload.updatedAt;meta.lastHash=fingerprint(local);saveMeta(meta);
-        status('ok','متزامن مع السحابة');
-      }).catch(function(err){
-        status('err','تعذر المزامنة — البيانات المحلية محفوظة');
-        console.warn('IV V2 cloud write',err);
-      });
-    },900);
-  }
-
-  function hydrate(snapshot){
-    if(!snapshot.exists){
-      ready=true; status('ok','السحابة جاهزة');
-      writeCloud();
-      return;
-    }
-    var cloud=(snapshot.data()||{}).data||{};
-    var local=pack();
-    var merged=mergeState(local,cloud);
-    Object.keys(merged).forEach(function(k){setLocal(k,merged[k])});
-    var meta=localMeta();meta.lastPull=now();meta.rev=Number(snapshot.data().rev||0);
-    meta.lastHash=fingerprint(merged);saveMeta(meta);
-    ready=true;
-    status('ok','متزامن مع السحابة');
-    /*
-      Re-render the existing application after cloud hydration.
-      We intentionally use the existing renderer rather than replacing its UI.
-    */
-    setTimeout(function(){
-      try{ if(typeof window.renderAll==='function')window.renderAll(); }catch(e){}
-      try{ if(typeof window.applyProfileLook==='function')window.applyProfileLook(); }catch(e){}
-    },80);
-  }
-
-  function startRealtime(){
-    if(!connected)return;
-    if(unsub)try{unsub()}catch(e){}
-    unsub=stateRef().onSnapshot(function(s){
-      if(s.metadata&&s.metadata.hasPendingWrites)return;
-      hydrate(s);
-    },function(err){
-      status('err','السحابة غير متاحة الآن');
-      console.warn('IV V2 realtime',err);
-    });
-  }
-
-  function patchStorage(){
-    try{
-      var native=Storage.prototype.setItem;
-      if(native.__ivV2)return;
-      function wrapped(k,v){
-        native.call(this,k,v);
-        if(this===localStorage && CLOUD_KEYS.indexOf(k)!==-1 && !applying){
-          writeCloud();
-        }
-      }
-      wrapped.__ivV2=true;
-      Storage.prototype.setItem=wrapped;
-    }catch(e){}
-  }
-
-  function migrateOldCloud(){
-    /*
-      One-time bridge:
-      read legacy iv/users/tracks/... and merge them into iv_v2/state.
-      No legacy document is deleted or rewritten.
-    */
-    var meta=localMeta();
-    if(meta.migratedLegacy)return Promise.resolve();
-    var keys=CLOUD_KEYS.map(function(k){
-      return db.collection('iv').doc(k.replace(/^ivlive_/,'')).get().then(function(s){
-        if(s.exists){
-          var d=s.data()||{};
-          if(d.data!==undefined){
-            var old=getLocal(k);
-            var merged=mergeState(old,d.data);
-            setLocal(k,merged);
-          }
-        }
-      }).catch(function(){});
-    });
-    return Promise.all(keys).then(function(){
-      meta.migratedLegacy=true;saveMeta(meta);
-    });
-  }
-
-  function installUI(){
-    if(el('ivV2Sync'))return;
-    var s=document.createElement('div');
-    s.id='ivV2Sync';s.className='iv-v2-sync warn';
-    s.innerHTML='<span class="iv-v2-dot"></span><span data-sync-text>جاري الاتصال بالسحابة…</span><button type="button" aria-label="خيارات السحابة">☁</button>';
-    document.body.appendChild(s);
-
-    var panel=document.createElement('div');
-    panel.id='ivV2Cloud';panel.className='iv-v2-cloud';
-    panel.innerHTML='<h3>حالة السحابة</h3><p>المزامنة الجديدة تعمل كطبقة مستقلة وآمنة على نفس مشروع Firebase. البيانات القديمة لا تُحذف، وكل جهاز يستقبل التحديثات لحظياً عند توفر الاتصال.</p><div class="iv-v2-row"><span>الجهاز</span><code>'+localDeviceId.slice(-10)+'</code></div><div class="iv-v2-row"><span>الحساب</span><b id="ivV2Account">—</b></div><div class="iv-v2-row"><button class="iv-v2-btn primary" id="ivV2SyncNow">مزامنة الآن</button><button class="iv-v2-btn" id="ivV2Close">إغلاق</button></div>';
-    document.body.appendChild(panel);
-    s.querySelector('button').onclick=function(){panel.classList.toggle('open');updateAccount()};
-    panel.querySelector('#ivV2Close').onclick=function(){panel.classList.remove('open')};
-    panel.querySelector('#ivV2SyncNow').onclick=function(){writeCloud();toast('تم إرسال طلب مزامنة');};
-  }
-  function updateAccount(){
-    var e=el('ivV2Account');if(e)e.textContent=currentUserCode();
-  }
-
-  function boot(){
-    installUI();
-    updateAccount();
-    patchStorage();
-    if(!ensureFirebase()){
-      status('warn','وضع محلي — لا يوجد اتصال بالسحابة');
-      return;
-    }
-    status('warn','جاري مزامنة بياناتك…');
-    migrateOldCloud().then(startRealtime);
-  }
-
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);
-  else boot();
-
-  window.ivV2Cloud={
-    sync:function(){writeCloud()},
-    status:function(){return {connected:connected,ready:ready,device:localDeviceId}}
-  };
-})();
-</script>
-
 </body>
 </html>
