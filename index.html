@@ -1547,9 +1547,13 @@ var $=function(id){return document.getElementById(id)};
     ivlive_deleted:'deleted',
     ivlive_favs:'favs'
   };
-  function save(k,v){
+  var IV_CLOUD_LOCK=0;
+  function save(k,v,opt){
     try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}
-    if(CLOUD_KEYS[k]) cloudPut(CLOUD_KEYS[k], v);
+    if(CLOUD_KEYS[k] && !IV_CLOUD_LOCK && !(opt&&opt.localOnly)) cloudPut(CLOUD_KEYS[k], v);
+  }
+  function saveLocal(k,v){
+    try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}
   }
   function nid(){return 'n'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 
@@ -1736,13 +1740,45 @@ var $=function(id){return document.getElementById(id)};
       try{ localStorage.setItem('ivlive_tracks', JSON.stringify(tracks)); }catch(eS){}
       return;
     }
-    try{ localStorage.setItem('ivlive_tracks_backup', JSON.stringify(tracks.map(function(t){return {id:t.id,title:t.title,artist:t.artist,artists:t.artists,category:t.category,date:t.date,owner:t.owner,old:!!t.old}; }))); }catch(eB){}
-
-    var slim=tracks.map(function(t){
-      var c={id:t.id,title:t.title,artist:t.artist,artists:t.artists,cover:t.cover,category:t.category,old:!!t.old,audio:t.audioUrl||'',audioUrl:t.audioUrl||'',audioParts:t.audioParts||0,plays:t.plays||0,likes:t.likes||0,dislikes:t.dislikes||0,owner:t.owner||'',date:t.date||'',awards:t.awards||[],pending:!!t.pending,pendingFor:t.pendingFor||[],lyrics:t.lyrics||'',lyricSync:!!t.lyricSync,updatedAt:t.updatedAt||Date.now()};
-      return c;
+    try{ localStorage.setItem('ivlive_tracks_backup', JSON.stringify(tracks.map(function(t){return {id:t.id,title:t.title,artist:t.artist,artists:t.artists,category:t.category,date:t.date,owner:t.owner,old:!!t.old,createdAt:t.createdAt||0}; }))); }catch(eB){}
+    IV_WRITE_TS.tracks=nowTs();
+    // حفظ محلي أولاً
+    try{ localStorage.setItem('ivlive_tracks', JSON.stringify(tracks)); }catch(eL){}
+    if(!cloudOn) return;
+    // دمج مع السحابة ثم كتابة — يمنع مسح أعمال الآخرين
+    cloudGet('tracks').then(function(remote){
+      if(remote && remote.length){
+        IV_CLOUD_LOCK++;
+        try{ mergeTracks(remote); } finally { IV_CLOUD_LOCK=Math.max(0,IV_CLOUD_LOCK-1); }
+      }
+      cloudPut('tracks', tracks);
+    }).catch(function(){ cloudPut('tracks', tracks); });
+  }
+  function mergeNotifs(remote){
+    if(!remote || !remote.length) return;
+    var map={};
+    (notifs||[]).forEach(function(n){ if(n&&n.id!=null) map[String(n.id)]=n; });
+    remote.forEach(function(n){
+      if(!n||n.id==null) return;
+      var id=String(n.id), L=map[id];
+      if(!L){ map[id]=n; return; }
+      var rank={pending:0,rejected:1,accepted:2};
+      var rs=rank[n.status]||0, ls=rank[L.status]||0;
+      if(rs>ls) map[id]=Object.assign({},L,n);
+      else if(rs===ls && (+n.createdAt||0)>=(+L.createdAt||0)) map[id]=Object.assign({},L,n);
+      else map[id]=Object.assign({},n,L);
     });
-    save('ivlive_tracks',slim);
+    notifs=Object.keys(map).map(function(k){return map[k];});
+  }
+  function mergeReactions(remote){
+    if(!remote || typeof remote!=='object') return;
+    reactions=reactions||{};
+    Object.keys(remote).forEach(function(k){
+      if(reactions[k]==null) reactions[k]=remote[k];
+      else if(typeof remote[k]==='object' && typeof reactions[k]==='object'){
+        Object.keys(remote[k]).forEach(function(uid){ reactions[k][uid]=remote[k][uid]; });
+      } else reactions[k]=remote[k];
+    });
   }
   function mergeNews(remote){
     if(!remote || !remote.length) return;
@@ -1763,6 +1799,17 @@ var $=function(id){return document.getElementById(id)};
       }
     });
     news=normalizeNews(Object.keys(map).map(function(k){return map[k];}));
+  }
+  function persistNotifs(){
+    saveLocal('ivlive_notifs', notifs);
+    if(!cloudOn) return;
+    cloudGet('notifs').then(function(remote){
+      if(remote && remote.length){
+        IV_CLOUD_LOCK++;
+        try{ mergeNotifs(remote); } finally { IV_CLOUD_LOCK=Math.max(0,IV_CLOUD_LOCK-1); }
+      }
+      cloudPut('notifs', notifs);
+    }).catch(function(){ cloudPut('notifs', notifs); });
   }
   function persistNews(){
     (news||[]).forEach(function(n){ if(n && !n.updatedAt) n.updatedAt=nowTs(); });
@@ -3635,7 +3682,7 @@ var $=function(id){return document.getElementById(id)};
           persistTracks();
         }
       }
-      save('ivlive_notifs',notifs);updateBadge();renderNotifs();renderHome();renderSongs();
+      persistNotifs();updateBadge();renderNotifs();renderHome();renderSongs();
     }});
   }
 
@@ -4064,7 +4111,7 @@ $('pub').onclick=function(){
             trackId:id,trackTitle:t,status:'pending',createdAt:Date.now()
           });
         });
-        save('ivlive_notifs',notifs);persistTracks();
+        persistNotifs();persistTracks();
         $('mf').value='';$('cf').value='';$('tt').value='';if($('ly'))$('ly').value='';if($('lySyncOn'))$('lySyncOn').checked=false;if($('lySyncBox'))$('lySyncBox').classList.add('hidden');$('cp').innerHTML='';$('mn').textContent='';cover=null;collabSel={};
         hideForms();renderAll();go('profile');
         if(btn){btn.disabled=false;btn.textContent='نشر / إرسال طلبات التعاون'}
@@ -4212,6 +4259,8 @@ $('pub').onclick=function(){
     ]).then(function(arr){
       var cu=arr[0], ct=arr[1], cn=arr[2], ca=arr[3], cv=arr[4], cp=arr[5], cr=arr[6], cf=arr[7], cd=arr[8], cFav=arr[9];
       var changed=false;
+      IV_CLOUD_LOCK++;
+      try{
       if(cu && typeof cu==='object' && Object.keys(cu).length){
         mergeUsers(cu);
         changed=true;
@@ -4231,47 +4280,45 @@ $('pub').onclick=function(){
                 if(pu.admin!=null) L.admin=!!pu.admin;
                 L.updatedAt=Math.max(rt,lt);
                 users[c]=L;
-                if(profile.code===c){ profile.name=L.name||profile.name; profile.bio=L.bio||''; }
-                try{ localStorage.setItem('ivlive_users', JSON.stringify(users)); }catch(e){}
-                updateProfileUI(); renderArtists();
+                if(profile&&profile.code===c){ profile.name=L.name||profile.name; profile.bio=L.bio||''; }
+                saveLocal('ivlive_users', users);
+                try{ updateProfileUI(); renderArtists(); }catch(eU){}
               }
             }
           });
           cloudGet('ava_'+c).then(function(av){
-            if(av){ users[c].avatar=av; if(artistsList){ artistsList.forEach(function(a){ if(a.n===users[c].name || a.code===c) a.avatar=av; }); } if(profile.code===c){ profile.avatar=av; } updateProfileUI(); renderArtists(); }
+            if(av){ users[c]=users[c]||{}; users[c].avatar=av; if(artistsList){ artistsList.forEach(function(a){ if(a.n===users[c].name || a.code===c) a.avatar=av; }); } if(profile&&profile.code===c){ profile.avatar=av; } try{updateProfileUI(); renderArtists();}catch(eA){} }
           });
           cloudGet('ban_'+c).then(function(bn){
             if(bn){
-              users[c].banner=bn;
-              artistsList.forEach(function(a){ if(a.code===c || a.n===users[c].name) a.banner=bn; });
-              if(profile.code===c){ profile.banner=bn; applyProfileLook(); }
-              renderArtists();
+              users[c]=users[c]||{}; users[c].banner=bn;
+              if(artistsList) artistsList.forEach(function(a){ if(a.code===c || a.n===users[c].name) a.banner=bn; });
+              if(profile&&profile.code===c){ profile.banner=bn; try{applyProfileLook();}catch(eB){} }
+              try{renderArtists();}catch(eR){}
             }
           });
         });
       }
-      /* لا نكتب المستخدمين فوق السحابة إذا فشل الجلب */
       if(ct && ct.length){
         localSeedOnly=false;
         mergeTracks(ct);
-        tracks.forEach(function(t){
-          if(!t.cover){
-            cloudGet('cover_'+t.id).then(function(cv2){ if(cv2){ t.cover=cv2; renderAll(); } });
+        tracks.forEach(function(tr){
+          if(!tr.cover){
+            cloudGet('cover_'+tr.id).then(function(cv2){ if(cv2){ tr.cover=cv2; try{renderAll();}catch(e){} } });
           }
         });
         changed=true;
-      } else if(ct && ct.length===0){
-        /* keep seeded/local songs */
       }
-      if(cn && cn.length){ mergeNews(cn); changed=true; try{localStorage.setItem('ivlive_news',JSON.stringify(news))}catch(eN){} }
-      if(ca && ca.length){ mergeArtists(ca); changed=true; try{localStorage.setItem('ivlive_artists',JSON.stringify(artistsList))}catch(eA2){} }
-      if(cv){ votesStore=cv; save('ivlive_votes',votesStore); }
-      if(cp){ postponeMap=cp; save('ivlive_postpone',postponeMap); }
-      if(cr){ reactions=cr; save('ivlive_reactions',reactions); }
-      if(cf){ notifs=cf; save('ivlive_notifs',notifs); }
-      if(cd && cd.length){ deletedTracks=Array.from(new Set((deletedTracks||[]).concat(cd))); save('ivlive_deleted',deletedTracks); }
-      if(cFav && typeof cFav==='object'){ favStore=cFav; try{localStorage.setItem('ivlive_favs',JSON.stringify(favStore))}catch(eF){} }
-      if(changed) renderAll();
+      if(cn && cn.length){ mergeNews(cn); changed=true; saveLocal('ivlive_news', news); }
+      if(ca && ca.length){ mergeArtists(ca); changed=true; saveLocal('ivlive_artists', artistsList); }
+      if(cv){ votesStore=cv; saveLocal('ivlive_votes', votesStore); }
+      if(cp){ postponeMap=cp; saveLocal('ivlive_postpone', postponeMap); }
+      if(cr){ mergeReactions(cr); saveLocal('ivlive_reactions', reactions); }
+      if(cf){ mergeNotifs(Array.isArray(cf)?cf:[]); saveLocal('ivlive_notifs', notifs); changed=true; }
+      if(cd && cd.length){ deletedTracks=Array.from(new Set((deletedTracks||[]).concat(cd))); saveLocal('ivlive_deleted', deletedTracks); }
+      if(cFav && typeof cFav==='object'){ favStore=cFav; saveLocal('ivlive_favs', favStore); }
+      } finally { IV_CLOUD_LOCK=Math.max(0, IV_CLOUD_LOCK-1); }
+      if(changed) try{renderAll();}catch(eRA){}
       if(cloudOn && cloudDb && !window._ivLive){
         window._ivLive=true;
         ['users','tracks','news','artists','votes','postpone','reactions','notifs','deleted','favs'].forEach(function(name){
@@ -4280,16 +4327,19 @@ $('pub').onclick=function(){
             var d=s.data()||{};
             var val=d.data;
             if(val==null) return;
-            if(name==='users' && typeof val==='object'){ mergeUsers(val); try{localStorage.setItem('ivlive_users',JSON.stringify(users))}catch(eU){} try{syncTrackArtistNames();syncArtistPhotos()}catch(eS2){} }
-            if(name==='tracks' && val && val.length){ localSeedOnly=false; mergeTracks(val); }
-            if(name==='news' && val && val.length!=null){ mergeNews(val); try{localStorage.setItem('ivlive_news',JSON.stringify(news))}catch(eN){} }
-            if(name==='artists' && val.length!=null){ mergeArtists(val); }
-            if(name==='votes') votesStore=val||{};
-            if(name==='postpone') postponeMap=val||{};
-            if(name==='reactions') reactions=val||{};
-            if(name==='notifs') notifs=val||[];
-            if(name==='deleted') deletedTracks=Array.from(new Set((deletedTracks||[]).concat(val||[])));
-            if(name==='favs' && val){ favStore=val; }
+            IV_CLOUD_LOCK++;
+            try{
+              if(name==='users' && typeof val==='object'){ mergeUsers(val); saveLocal('ivlive_users', users); try{syncTrackArtistNames();syncArtistPhotos()}catch(eS2){} }
+              if(name==='tracks' && val && val.length){ localSeedOnly=false; mergeTracks(val); saveLocal('ivlive_tracks', tracks); }
+              if(name==='news' && val && val.length!=null){ mergeNews(val); saveLocal('ivlive_news', news); }
+              if(name==='artists' && val && val.length!=null){ mergeArtists(val); saveLocal('ivlive_artists', artistsList); }
+              if(name==='votes' && val){ votesStore=val; saveLocal('ivlive_votes', votesStore); }
+              if(name==='postpone' && val){ postponeMap=val; saveLocal('ivlive_postpone', postponeMap); }
+              if(name==='reactions' && val){ mergeReactions(val); saveLocal('ivlive_reactions', reactions); }
+              if(name==='notifs' && val){ mergeNotifs(Array.isArray(val)?val:[]); saveLocal('ivlive_notifs', notifs); }
+              if(name==='deleted' && val){ deletedTracks=Array.from(new Set((deletedTracks||[]).concat(val||[]))); saveLocal('ivlive_deleted', deletedTracks); }
+              if(name==='favs' && val){ favStore=val; saveLocal('ivlive_favs', favStore); }
+            } finally { IV_CLOUD_LOCK=Math.max(0, IV_CLOUD_LOCK-1); }
             try{ tracks=(tracks||[]).filter(function(t){ return (deletedTracks||[]).indexOf(String(t.id))<0; }); renderAll(); }catch(eR){}
           });
         });
