@@ -5,7 +5,7 @@
 <script>
 /* تحديث تلقائي — يتجاوز كاش سفاري بدون تدخل الزائر */
 (function(){
-  var BUILD="20260921c";
+  var BUILD="20260921d";
   window.IV_BUILD=BUILD;
   try{
     if(navigator.serviceWorker){
@@ -63,7 +63,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<!-- IV_BUILD: 20260921c -->
+<!-- IV_BUILD: 20260921d -->
 <title>IV PRODUCTION</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Mirza:wght@700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
@@ -758,7 +758,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
   <button type="button" class="enter" id="btnEnter">دخول الموقع</button>
   <div class="land-foot">
     <div class="land-links">
-      <span id="ivBuildTag" style="display:none">20260921c</span>
+      <span id="ivBuildTag" style="display:none">20260921d</span>
       <button type="button" id="landStrategy">الاستراتيجية</button>
     </div>
     <div>© 2026 IV PRODUCTION — جميع الحقوق محفوظة</div>
@@ -1405,7 +1405,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
 <script>
 (function(){
-  try{ console.log("IV_BUILD 20260921c"); window.IV_BUILD="20260921c"; }catch(e){}
+  try{ console.log("IV_BUILD 20260921d"); window.IV_BUILD="20260921d"; }catch(e){}
   var IV_SEED_DEMO=false;
   var localSeedOnly=false;
   var FB_CONFIG={
@@ -1846,7 +1846,9 @@ var $=function(id){return document.getElementById(id)};
   function persistTracks(){
     tracks=(tracks||[]).filter(function(t){ return (deletedTracks||[]).indexOf(String(t.id))<0; });
     if(!tracks.length){
+      // لا تكتب قائمة فارغة للسحابة أبداً — يحمي من مسح مكتبة الجميع
       try{ localStorage.setItem('ivlive_tracks', localStorage.getItem('ivlive_tracks')||'[]'); }catch(e0){}
+      recoverEmptyLibrary();
       return;
     }
     if(localSeedOnly){
@@ -4366,6 +4368,42 @@ $('pub').onclick=function(){
   window.renderAll=renderAll;
   renderNews();
 
+  
+  function recoverEmptyLibrary(){
+    // إذا المكتبة فاضية رغم وجود سحابة — امسح المحلي الفاسد وأعد الجلب
+    if(!cloudOn) return Promise.resolve(false);
+    var empty=!(tracks&&tracks.length);
+    if(!empty) return Promise.resolve(false);
+    try{
+      localStorage.removeItem('ivlive_tracks');
+      localStorage.removeItem('ivlive_tracks_backup');
+      localStorage.removeItem('ivlive_deleted');
+      // لا تمسح users/session
+    }catch(e){}
+    deletedTracks=[];
+    localSeedOnly=false;
+    return cloudGet('tracks').then(function(ct){
+      if(ct && ct.length){
+        IV_CLOUD_LOCK++;
+        try{
+          tracks=[];
+          mergeTracks(ct);
+          tracks.forEach(function(tr){
+            if(tr && !tr.cover){
+              cloudGet('cover_'+tr.id).then(function(cv2){ if(cv2){ tr.cover=cv2; try{renderAll();}catch(e){} } });
+            }
+          });
+        } finally { IV_CLOUD_LOCK=Math.max(0,IV_CLOUD_LOCK-1); }
+        try{ localStorage.setItem('ivlive_tracks', JSON.stringify(tracks.map(function(x){
+          var o=Object.assign({},x); if(o.cover&&String(o.cover).indexOf('data:')===0) o.cover=''; return o;
+        }))); }catch(eL){}
+        try{renderAll();}catch(eR){}
+        return true;
+      }
+      return false;
+    }).catch(function(){ return false; });
+  }
+
   function applyCloud(){
     if(!cloudOn) return;
     Promise.all([
@@ -4442,6 +4480,12 @@ $('pub').onclick=function(){
       if(cFav && typeof cFav==='object'){ favStore=cFav; saveLocal('ivlive_favs', favStore); }
       } finally { IV_CLOUD_LOCK=Math.max(0, IV_CLOUD_LOCK-1); }
       if(changed) try{renderAll();}catch(eRA){}
+      // إن كانت فارغة بعد الجلب — استرجاع طارئ
+      if(!(tracks&&tracks.length)){
+        recoverEmptyLibrary().then(function(ok){
+          if(ok) try{ toast('تم استرجاع الأعمال من السحابة'); }catch(e){}
+        });
+      }
       if(cloudOn && cloudDb && !window._ivLive){
         window._ivLive=true;
         ['users','tracks','news','artists','votes','postpone','reactions','notifs','deleted','favs'].forEach(function(name){
@@ -4535,6 +4579,10 @@ $('pub').onclick=function(){
   }
   function mergeTracks(remote){
     if(!remote || !remote.length) return;
+    // حماية: لا تستبدل مكتبة محلية غنية بقائمة سحابة ناقصة جداً إلا إذا المحلي فاضي
+    if((tracks||[]).length>5 && remote.length>0 && remote.length<(tracks.length*0.3)){
+      // دمج فقط بدون حذف المحلي
+    }
     remote=remote.filter(function(t){ return !isDemoSample(t); });
     if(localSeedOnly){
       var prev=tracks.slice();
@@ -5074,6 +5122,16 @@ $('pub').onclick=function(){
   window.go=go;
   window.renderAll=renderAll;
   applyCloud();
+  // إعادة محاولة تلقائية كل 4 ثوانٍ إذا بقيت فارغة (أقصى 5 مرات)
+  (function(){
+    var tries=0;
+    var iv=setInterval(function(){
+      tries++;
+      if((tracks&&tracks.length) || tries>5){ clearInterval(iv); return; }
+      recoverEmptyLibrary();
+      try{ applyCloud(); }catch(e){}
+    }, 4000);
+  })();
   try{ if(window.__ivEntered){ var app=$("app"); if(app){ app.classList.add("show"); app.style.opacity="1"; app.style.display="flex"; } go("home"); renderAll(); } }catch(eBoot){}
 })();
 
