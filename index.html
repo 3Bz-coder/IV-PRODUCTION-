@@ -2,6 +2,56 @@
 <html lang="ar" dir="rtl" data-theme="light">
 <head>
 <meta charset="utf-8"/>
+<script>
+/* تحديث تلقائي — يتجاوز كاش سفاري بدون تدخل الزائر */
+(function(){
+  var BUILD="20260921b";
+  window.IV_BUILD=BUILD;
+  try{
+    if(navigator.serviceWorker){
+      navigator.serviceWorker.getRegistrations().then(function(rs){
+        rs.forEach(function(r){ try{ r.unregister(); }catch(e){} });
+      });
+    }
+  }catch(e0){}
+  try{
+    if(window.caches && caches.keys){
+      caches.keys().then(function(ks){
+        ks.forEach(function(k){ try{ caches.delete(k); }catch(e){} });
+      });
+    }
+  }catch(e1){}
+  var flag="iv_forced_"+BUILD;
+  if(sessionStorage.getItem(flag)==="1") return;
+  var url=location.pathname+(location.search&&location.search.indexOf("_ivb=")>=0?location.search:((location.search?"&":"?")+"_ivb="+BUILD))+location.hash;
+  fetch(location.pathname+"?_ivb="+BUILD+"&_t="+Date.now(), {
+    cache:"no-store",
+    headers:{"Cache-Control":"no-cache","Pragma":"no-cache"}
+  }).then(function(r){ return r.text(); }).then(function(html){
+    var m=html.match(/IV_BUILD:\s*([A-Za-z0-9._-]+)/);
+    var remote=m&&m[1];
+    if(remote && remote!==BUILD){
+      sessionStorage.setItem(flag,"1");
+      location.replace(location.pathname+"?_ivb="+encodeURIComponent(remote)+"&_t="+Date.now());
+    } else if(location.search.indexOf("_ivb=")===-1){
+      /* أول زيارة بعد التحديث: أعد التحميل مرة واحدة بعنوان بدون كاش */
+      var last=localStorage.getItem("iv_last_build");
+      if(last && last!==BUILD){
+        sessionStorage.setItem(flag,"1");
+        localStorage.setItem("iv_last_build", BUILD);
+        location.replace(location.pathname+"?_ivb="+BUILD+"&_t="+Date.now());
+        return;
+      }
+      localStorage.setItem("iv_last_build", BUILD);
+    } else {
+      localStorage.setItem("iv_last_build", BUILD);
+    }
+  }).catch(function(){
+    try{ localStorage.setItem("iv_last_build", BUILD); }catch(e){}
+  });
+})();
+</script>
+
 <meta name="viewport" content="width=device-width, initial-scale=0.9, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="mobile-web-app-capable" content="yes"/>
@@ -10,6 +60,10 @@
 <meta name="application-name" content="IV PRODUCTION"/>
 <meta name="theme-color" content="#efe6d6" media="(prefers-color-scheme: light)"/>
 <meta name="theme-color" content="#101018" media="(prefers-color-scheme: dark)"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<!-- IV_BUILD: 20260921b -->
 <title>IV PRODUCTION</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Mirza:wght@700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
@@ -704,6 +758,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
   <button type="button" class="enter" id="btnEnter">دخول الموقع</button>
   <div class="land-foot">
     <div class="land-links">
+      <span id="ivBuildTag" style="display:none">20260921b</span>
       <button type="button" id="landStrategy">الاستراتيجية</button>
     </div>
     <div>© 2026 IV PRODUCTION — جميع الحقوق محفوظة</div>
@@ -1350,6 +1405,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
 <script>
 (function(){
+  try{ console.log("IV_BUILD 20260921b"); window.IV_BUILD="20260921b"; }catch(e){}
   var IV_SEED_DEMO=false;
   var localSeedOnly=false;
   var FB_CONFIG={
@@ -1416,6 +1472,63 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
       return null;
     }).catch(function(){ return null; });
   }
+
+  /* ===== Cloud v2: per-entity docs + never overwrite newer ===== */
+  function cloudPutEntity(docId, data, ts){
+    if(!cloudOn||!cloudDb||!docId) return Promise.resolve();
+    ts=+ts||Date.now();
+    var ref=cloudDb.collection('iv').doc(docId);
+    return ref.get().then(function(s){
+      var remote=s.exists?(s.data()||{}):null;
+      var rts=remote?(+remote.updated||+((remote.data||{}).updatedAt)||0):0;
+      if(rts && rts>ts) return false; // remote newer — do not overwrite
+      return ref.set({data:data, updated:ts}).then(function(){ return true; });
+    }).catch(function(){
+      try{ return ref.set({data:data, updated:ts}); }catch(e){ return false; }
+    });
+  }
+  function cloudPutUserEntity(code, u){
+    if(!code||!u) return Promise.resolve();
+    var payload={
+      name:u.name||'', bio:u.bio||'', admin:!!u.admin,
+      accent:u.accent||'#e8c36a', icon:u.icon||'dark', pledged:!!u.pledged,
+      updatedAt:+u.updatedAt||Date.now()
+    };
+    return cloudPutEntity('user_'+code, payload, payload.updatedAt);
+  }
+  function cloudPutTrackEntity(tr){
+    if(!tr||!tr.id) return Promise.resolve();
+    var o={
+      id:tr.id, title:tr.title, artist:tr.artist, artists:tr.artists||[],
+      category:tr.category||'', old:!!tr.old, audioParts:tr.audioParts||0,
+      audioUrl:tr.audioUrl||'', plays:tr.plays||0, likes:tr.likes||0, dislikes:tr.dislikes||0,
+      owner:tr.owner||'', owners:tr.owners||tr.ownerCodes||[], ownerCodes:tr.ownerCodes||tr.owners||[],
+      date:tr.date||'', createdAt:tr.createdAt||0, updatedAt:tr.updatedAt||Date.now(),
+      awards:tr.awards||[], pending:!!tr.pending, pendingFor:tr.pendingFor||[],
+      lyrics:tr.lyrics||'', lyricSync:!!tr.lyricSync,
+      cover:(tr.cover&&String(tr.cover).indexOf('http')===0)?tr.cover:''
+    };
+    var p=cloudPutEntity('t_'+tr.id, o, o.updatedAt);
+    if(tr.cover && String(tr.cover).indexOf('data:')===0){
+      try{ cloudDb.collection('iv').doc('cover_'+tr.id).set({data:tr.cover, updated:Date.now()}); }catch(e){}
+    }
+    return p;
+  }
+  function cloudLoadAllTrackEntities(ids){
+    if(!cloudOn||!cloudDb) return Promise.resolve([]);
+    ids=(ids||[]).filter(Boolean);
+    if(!ids.length) return Promise.resolve([]);
+    var jobs=ids.map(function(id){
+      return cloudDb.collection('iv').doc('t_'+id).get().then(function(s){
+        if(!s.exists) return null;
+        var d=s.data()||{};
+        return d.data||null;
+      }).catch(function(){ return null; });
+    });
+    return Promise.all(jobs).then(function(arr){ return arr.filter(Boolean); });
+  }
+
+
   var CHUNK=700000;
   function readFileB64(file){
     return new Promise(function(res,rej){
@@ -1742,10 +1855,12 @@ var $=function(id){return document.getElementById(id)};
     }
     try{ localStorage.setItem('ivlive_tracks_backup', JSON.stringify(tracks.map(function(t){return {id:t.id,title:t.title,artist:t.artist,artists:t.artists,category:t.category,date:t.date,owner:t.owner,old:!!t.old,createdAt:t.createdAt||0}; }))); }catch(eB){}
     IV_WRITE_TS.tracks=nowTs();
-    // حفظ محلي أولاً
     try{ localStorage.setItem('ivlive_tracks', JSON.stringify(tracks)); }catch(eL){}
     if(!cloudOn) return;
-    // دمج مع السحابة ثم كتابة — يمنع مسح أعمال الآخرين
+    // كل أغنية بمستند مستقل — ما تنمسح إذا فشل ملخص tracks
+    (tracks||[]).forEach(function(tr){
+      if(tr && tr.id) cloudPutTrackEntity(tr);
+    });
     cloudGet('tracks').then(function(remote){
       if(remote && remote.length){
         IV_CLOUD_LOCK++;
@@ -4302,12 +4417,20 @@ $('pub').onclick=function(){
       if(ct && ct.length){
         localSeedOnly=false;
         mergeTracks(ct);
+        changed=true;
+        var ids=(ct||[]).map(function(x){return x&&x.id}).filter(Boolean);
+        cloudLoadAllTrackEntities(ids).then(function(ents){
+          if(ents && ents.length){
+            IV_CLOUD_LOCK++;
+            try{ mergeTracks(ents); } finally { IV_CLOUD_LOCK=Math.max(0,IV_CLOUD_LOCK-1); }
+            try{renderAll();}catch(e){}
+          }
+        });
         tracks.forEach(function(tr){
           if(!tr.cover){
             cloudGet('cover_'+tr.id).then(function(cv2){ if(cv2){ tr.cover=cv2; try{renderAll();}catch(e){} } });
           }
         });
-        changed=true;
       }
       if(cn && cn.length){ mergeNews(cn); changed=true; saveLocal('ivlive_news', news); }
       if(ca && ca.length){ mergeArtists(ca); changed=true; saveLocal('ivlive_artists', artistsList); }
@@ -4492,17 +4615,30 @@ $('pub').onclick=function(){
   function persistUsers(){
     try{ localStorage.setItem('ivlive_users', JSON.stringify(users)); }catch(e){}
     IV_WRITE_TS.users=nowTs();
-    if(!cloudOn){ cloudPut('users', users); return; }
+    if(!cloudOn) return;
     var myCode=profile&&profile.code;
     var mySnap=myCode&&users[myCode]?Object.assign({},users[myCode]):null;
-    cloudGet('users').then(function(remote){
-      if(remote && typeof remote==='object') mergeUsers(remote);
-      if(mySnap && myCode){
-        var L=users[myCode]||{};
-        if((+mySnap.updatedAt||0)>=(+L.updatedAt||0)){
-          users[myCode]=Object.assign({},L,mySnap);
-        }
+    // اكتب حسابي كمستند مستقل أولاً (مصدر الحقيقة)
+    if(mySnap && myCode){
+      mySnap.updatedAt=+mySnap.updatedAt||Date.now();
+      users[myCode]=mySnap;
+      cloudPutUserEntity(myCode, mySnap);
+      if(mySnap.avatar){
+        try{ cloudDb.collection('iv').doc('ava_'+myCode).set({data:mySnap.avatar, updated:mySnap.updatedAt}); }catch(eA){}
       }
+      if(mySnap.banner){
+        try{ cloudDb.collection('iv').doc('ban_'+myCode).set({data:mySnap.banner, updated:mySnap.updatedAt}); }catch(eB){}
+      }
+    }
+    cloudGet('users').then(function(remote){
+      IV_CLOUD_LOCK++;
+      try{
+        if(remote && typeof remote==='object') mergeUsers(remote);
+        if(mySnap && myCode){
+          var L=users[myCode]||{};
+          if((+mySnap.updatedAt||0)>=(+L.updatedAt||0)) users[myCode]=Object.assign({},L,mySnap);
+        }
+      } finally { IV_CLOUD_LOCK=Math.max(0,IV_CLOUD_LOCK-1); }
       try{ localStorage.setItem('ivlive_users', JSON.stringify(users)); }catch(e2){}
       cloudPut('users', users);
     }).catch(function(){ cloudPut('users', users); });
