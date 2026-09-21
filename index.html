@@ -6,65 +6,42 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="theme-color" content="#efe6d6"/>
 <title>IV PRODUCTION</title>
-<!-- IV_BOOT: 20260921g -->
+<!-- IV_BOOT: 20260921h -->
 <script>
-(function () {
-  var BUILD = "20260921g";
-  var target = "app.html";
-  // version in query from BUILD
-
-  function go() {
-    var u = target + "?v=" + encodeURIComponent(BUILD) + "&t=" + Date.now();
-    try { location.replace(u); } catch (e) { location.href = u; }
+(function(){
+  var BUILD="20260921h";
+  try{ localStorage.setItem("iv_boot_build", BUILD); }catch(e){}
+  try{
+    if(navigator.serviceWorker){
+      navigator.serviceWorker.getRegistrations().then(function(rs){
+        (rs||[]).forEach(function(r){ try{r.unregister()}catch(e){} });
+      });
+    }
+  }catch(e){}
+  // إذا زيارة سابقة فشلت (مكتبة فاضية) → صفحة الإصلاح
+  var broken=false;
+  try{
+    var tr=localStorage.getItem("ivlive_tracks");
+    if(tr==="[]" || tr==="null") broken=true;
+    if(localStorage.getItem("iv_ui_broken")==="1") broken=true;
+  }catch(e){}
+  if(broken){
+    location.replace("fix.html?t="+Date.now());
+    return;
   }
-
-  try {
-    localStorage.setItem("iv_boot_build", BUILD);
-    localStorage.setItem("iv_last_build", BUILD);
-  } catch (e) {}
-
-  try {
-    if (navigator.serviceWorker) {
-      navigator.serviceWorker.getRegistrations().then(function (rs) {
-        (rs || []).forEach(function (r) { try { r.unregister(); } catch (e) {} });
-      });
-    }
-  } catch (e) {}
-
-  try {
-    if (window.caches && caches.keys) {
-      caches.keys().then(function (ks) {
-        (ks || []).forEach(function (k) { try { caches.delete(k); } catch (e) {} });
-      });
-    }
-  } catch (e) {}
-
-  // امسح مفاتيح الكاش القديمة للموقع فقط
-  try {
-    var kill = [];
-    for (var i = 0; i < localStorage.length; i++) {
-      var k = localStorage.key(i);
-      if (k && /^iv_forced_/.test(k)) kill.push(k);
-    }
-    kill.forEach(function (k) { localStorage.removeItem(k); });
-  } catch (e) {}
-
-  go();
-  setTimeout(go, 400);
-  setTimeout(go, 1200);
+  location.replace("app.html?v="+BUILD+"&t="+Date.now());
 })();
 </script>
 </head>
-<body style="margin:0;background:#efe6d6;color:#6b4a28;font-family:system-ui,-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center">
-  <div>
-    <div style="font-size:28px;font-weight:800;letter-spacing:.12em;margin-bottom:12px">IV</div>
-    <div style="font-size:14px;opacity:.75">جاري تحميل النسخة الحديثة…</div>
-    <p style="font-size:12px;opacity:.5;margin-top:18px">
-      إذا لم يفتح تلقائياً
-      <a href="app.html?v=20260921g" style="color:#6b4a28;font-weight:700">اضغط هنا</a>
+<body style="margin:0;background:#efe6d6;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:system-ui;color:#6b4a28">
+  <div style="text-align:center">
+    <div style="font-weight:800;letter-spacing:.12em;font-size:28px">IV</div>
+    <div style="margin-top:10px;font-size:13px;opacity:.7">جاري التحميل…</div>
+    <p style="margin-top:20px;font-size:12px">
+      <a href="fix.html" style="color:#6b4a28">إصلاح الجهاز</a>
+      ·
+      <a href="app.html?v=20260921h" style="color:#6b4a28">فتح مباشر</a>
     </p>
   </div>
 </body>

@@ -5,7 +5,7 @@
 <script>
 /* تحديث خفيف — يتحقق من version.txt فقط بدون تحميل 3MB */
 (function(){
-  var BUILD="20260921g";
+  var BUILD="20260921h";
   window.IV_BUILD=BUILD;
   try{
     if(navigator.serviceWorker){
@@ -55,7 +55,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<!-- IV_BUILD: 20260921g -->
+<!-- IV_BUILD: 20260921h -->
 <title>IV PRODUCTION</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Mirza:wght@700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
@@ -757,7 +757,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
   <button type="button" class="enter" id="btnEnter">دخول الموقع</button>
   <div class="land-foot">
     <div class="land-links">
-      <span id="ivBuildTag" style="display:none">20260921g</span>
+      <span id="ivBuildTag" style="display:none">20260921h</span>
       <button type="button" id="landStrategy">الاستراتيجية</button>
     </div>
     <div>© 2026 IV PRODUCTION — جميع الحقوق محفوظة</div>
@@ -1431,7 +1431,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
 <script>
 (function(){
-  try{ console.log("IV_BUILD 20260921g"); window.IV_BUILD="20260921g"; }catch(e){}
+  try{ console.log("IV_BUILD 20260921h"); window.IV_BUILD="20260921h"; }catch(e){}
   var IV_SEED_DEMO=false;
   var localSeedOnly=false;
   var FB_CONFIG={
@@ -1707,6 +1707,11 @@ var $=function(id){return document.getElementById(id)};
     return false;
   }
   var localSeedOnly=false;
+  try{
+    if(/[?&]reset=1/.test(location.search)){
+      ['ivlive_tracks','ivlive_tracks_backup','ivlive_deleted','iv_ui_broken'].forEach(function(k){ try{localStorage.removeItem(k)}catch(e){} });
+    }
+  }catch(eR){}
   var tracks=load('ivlive_tracks',null)||[];
   tracks=(tracks||[]).filter(function(t){ return !isDemoSample(t); });
   if(!tracks.length){
@@ -5182,7 +5187,11 @@ $('pub').onclick=function(){
     var tries=0;
     var iv=setInterval(function(){
       tries++;
-      if((tracks&&tracks.length) || tries>5){ clearInterval(iv); return; }
+      if((tracks&&tracks.length) || tries>5){
+        clearInterval(iv);
+        try{ if(!(tracks&&tracks.length)) localStorage.setItem('iv_ui_broken','1'); else localStorage.removeItem('iv_ui_broken'); }catch(e){}
+        return;
+      }
       recoverEmptyLibrary();
       try{ applyCloud(); }catch(e){}
     }, 4000);
