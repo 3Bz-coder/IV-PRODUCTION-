@@ -5,7 +5,7 @@
 <script>
 /* تحديث تلقائي — يتجاوز كاش سفاري بدون تدخل الزائر */
 (function(){
-  var BUILD="20260921d";
+  var BUILD="20260921e";
   window.IV_BUILD=BUILD;
   try{
     if(navigator.serviceWorker){
@@ -63,7 +63,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<!-- IV_BUILD: 20260921d -->
+<!-- IV_BUILD: 20260921e -->
 <title>IV PRODUCTION</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Mirza:wght@700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
@@ -107,6 +107,9 @@ svg{fill:currentColor}
 .layer.show{opacity:1;pointer-events:auto}
 #app.show{opacity:1!important;pointer-events:auto!important;display:flex!important}
 #land.show{opacity:1!important;pointer-events:auto!important}
+body.iv-in #land,body.iv-in #intro{display:none!important;opacity:0!important;pointer-events:none!important;z-index:-1!important}
+body.iv-in #app{opacity:1!important;pointer-events:auto!important;display:flex!important}
+body.iv-in .dock{pointer-events:auto!important;z-index:90!important}
 
 #intro{z-index:90;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--bg)}
 #intro:not(.show){display:none!important;pointer-events:none!important;z-index:-1!important}
@@ -758,7 +761,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
   <button type="button" class="enter" id="btnEnter">دخول الموقع</button>
   <div class="land-foot">
     <div class="land-links">
-      <span id="ivBuildTag" style="display:none">20260921d</span>
+      <span id="ivBuildTag" style="display:none">20260921e</span>
       <button type="button" id="landStrategy">الاستراتيجية</button>
     </div>
     <div>© 2026 IV PRODUCTION — جميع الحقوق محفوظة</div>
@@ -1282,6 +1285,31 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
   function load(k,f){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?f:v}catch(e){return f}}
   function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
   function usersMap(){var u=load('ivlive_users',{})||{};Object.keys(SEED).forEach(function(k){if(!u[k])u[k]=Object.assign({},SEED[k])});return u}
+  
+  function forceUIReady(){ window.forceUIReady=forceUIReady;
+
+    try{
+      ['intro','land','authModal','pledgeModal','strategyModal','upd11','tourMask','cropBg','plModal','pickFav'].forEach(function(id){
+        var el=$(id); if(!el) return;
+        el.classList.remove('show','open','on');
+        el.style.pointerEvents='none';
+        if(id==='intro'||id==='land'){ el.style.display='none'; el.style.opacity='0'; }
+        if(id==='upd11'||id==='tourMask'){ el.style.display='none'; el.style.opacity='0'; }
+      });
+      document.body.classList.add('iv-in');
+      var app=$('app');
+      if(app){
+        app.classList.add('show');
+        app.style.display='flex';
+        app.style.opacity='1';
+        app.style.pointerEvents='auto';
+        app.style.zIndex='50';
+      }
+      var dock=document.querySelector('.dock');
+      if(dock){ dock.style.pointerEvents='auto'; dock.style.zIndex='80'; }
+    }catch(e){}
+  }
+
   function hideIntro(){
     var n=$('intro'); if(!n) return;
     n.classList.remove('show');
@@ -1324,13 +1352,15 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
   window.__ivShowUpdate11=showUpdate11;
   function finishEnter(){
     hideIntro(); closeM('authModal'); closeM('pledgeModal');
+    try{ document.body.classList.add('iv-in'); }catch(e){}
     var land=$('land'), app=$('app');
-    if(land){ land.classList.remove('show'); land.style.display='none'; }
+    if(land){ land.classList.remove('show'); land.style.display='none'; land.style.opacity='0'; land.style.pointerEvents='none'; land.style.zIndex='-1'; }
     if(app){
       app.classList.add('show');
       app.style.opacity='1';
       app.style.pointerEvents='auto';
       app.style.display='flex';
+      app.style.zIndex='50';
     }
     window.__ivEntered=true;
     setTimeout(function(){
@@ -1405,7 +1435,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
 <script>
 (function(){
-  try{ console.log("IV_BUILD 20260921d"); window.IV_BUILD="20260921d"; }catch(e){}
+  try{ console.log("IV_BUILD 20260921e"); window.IV_BUILD="20260921e"; }catch(e){}
   var IV_SEED_DEMO=false;
   var localSeedOnly=false;
   var FB_CONFIG={
@@ -2081,8 +2111,12 @@ var $=function(id){return document.getElementById(id)};
   if($('tourSkip')) $('tourSkip').onclick=endTour;
 
   function finishEnter(){
+    try{ document.body.classList.add('iv-in'); }catch(e){}
+    try{ if(window.forceUIReady) forceUIReady(); }catch(e2){}
     $('pledgeModal').classList.remove('open');
-    $('authModal').classList.remove('open'); $('land').classList.remove('show'); $('app').classList.add('show');
+    $('authModal').classList.remove('open');
+    var land=$('land'); if(land){ land.classList.remove('show'); land.style.display='none'; land.style.pointerEvents='none'; }
+    var app=$('app'); if(app){ app.classList.add('show'); app.style.opacity='1'; app.style.pointerEvents='auto'; app.style.display='flex'; }
     renderAll(); applyProfileLook(); applyAppIcon(profile.icon); if($('wrap'))$('wrap').scrollTop=0; maybeShowPwa(); startTourIfNeeded();
     try{
       if(localStorage.getItem('iv_seen_v11')!=='1'){
@@ -2144,6 +2178,7 @@ var $=function(id){return document.getElementById(id)};
   function go(v){ window.__ivGo=v;
 
     try{
+    try{forceUIReady()}catch(eF){}
     document.querySelectorAll('.view').forEach(function(x){x.classList.remove('on')});
     var el=$('v-'+v); if(el) el.classList.add('on');
     if(v==='home'){
@@ -2184,7 +2219,17 @@ var $=function(id){return document.getElementById(id)};
       })(n,target,suffix);
     });
   }
-  document.querySelectorAll('.dock button[data-v]').forEach(function(b){b.onclick=function(){go(b.getAttribute('data-v'))}});
+  document.querySelectorAll('.dock button[data-v]').forEach(function(b){
+    b.onclick=function(e){ if(e){e.preventDefault();e.stopPropagation();} forceUIReady(); go(b.getAttribute('data-v')); };
+  });
+  // تفويض أحداث — يعمل حتى لو تعطل onclick
+  document.addEventListener('click', function(e){
+    var b=e.target && e.target.closest && e.target.closest('.dock button[data-v]');
+    if(!b) return;
+    e.preventDefault(); e.stopPropagation();
+    forceUIReady();
+    go(b.getAttribute('data-v'));
+  }, true);
   $('backArtists').onclick=function(){go('home')};
   $('notifBtn').onclick=function(){go('notifs')};
   $('goStrategy').onclick=function(){go('strategy')};
@@ -2240,10 +2285,11 @@ var $=function(id){return document.getElementById(id)};
     newsIdx=(i+news.length)%news.length;
     newsShift();
   }
-  function startNews(){clearInterval(newsTimer);if(news.length>1)newsTimer=setInterval(function(){newsGo(newsIdx+1)},4200)}
+  function startNews(){try{clearInterval(newsTimer);if(news&&news.length>1)newsTimer=setInterval(function(){newsGo(newsIdx+1)},4200)}catch(e){}}
   window.addEventListener('resize',function(){newsShift()});
   (function(){
     var el=$('news'),x0=null;
+    if(!el) return;
     el.addEventListener('touchstart',function(e){x0=e.touches[0].clientX;clearInterval(newsTimer)},{passive:true});
     el.addEventListener('touchend',function(e){
       if(x0==null)return;
@@ -4480,6 +4526,7 @@ $('pub').onclick=function(){
       if(cFav && typeof cFav==='object'){ favStore=cFav; saveLocal('ivlive_favs', favStore); }
       } finally { IV_CLOUD_LOCK=Math.max(0, IV_CLOUD_LOCK-1); }
       if(changed) try{renderAll();}catch(eRA){}
+      try{forceUIReady();}catch(eFU){}
       // إن كانت فارغة بعد الجلب — استرجاع طارئ
       if(!(tracks&&tracks.length)){
         recoverEmptyLibrary().then(function(ok){
