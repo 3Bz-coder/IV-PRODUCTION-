@@ -5,7 +5,7 @@
 <script>
 /* تحديث خفيف — يتحقق من version.txt فقط بدون تحميل 3MB */
 (function(){
-  var BUILD="20260921f";
+  var BUILD="20260921g";
   window.IV_BUILD=BUILD;
   try{
     if(navigator.serviceWorker){
@@ -55,7 +55,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<!-- IV_BUILD: 20260921f -->
+<!-- IV_BUILD: 20260921g -->
 <title>IV PRODUCTION</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Mirza:wght@700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
@@ -75,7 +75,10 @@ html[data-theme=dark]{
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Cairo",system-ui,sans-serif;-webkit-font-smoothing:antialiased;text-size-adjust:100%}
-@media(max-width:900px){html{zoom:0.9}}
+@media(max-width:900px){
+  /* لا تستخدم zoom على html — يكسر أماكن اللمس في سفاري iOS */
+  html{zoom:normal;-webkit-text-size-adjust:100%}
+}
 body{overflow:hidden}
 *{ -webkit-tap-highlight-color:transparent; }
 .tile,.song-row,.artist-dot,.acard,.news-card,.hero,.btn,.dock button{
@@ -102,6 +105,7 @@ svg{fill:currentColor}
 body.iv-in #land,body.iv-in #intro{display:none!important;opacity:0!important;pointer-events:none!important;z-index:-1!important}
 body.iv-in #app{opacity:1!important;pointer-events:auto!important;display:flex!important}
 body.iv-in .dock{pointer-events:auto!important;z-index:90!important}
+.dock button{min-height:48px;min-width:44px;position:relative;z-index:91}
 
 #intro{z-index:90;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--bg)}
 #intro:not(.show){display:none!important;pointer-events:none!important;z-index:-1!important}
@@ -753,7 +757,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
   <button type="button" class="enter" id="btnEnter">دخول الموقع</button>
   <div class="land-foot">
     <div class="land-links">
-      <span id="ivBuildTag" style="display:none">20260921f</span>
+      <span id="ivBuildTag" style="display:none">20260921g</span>
       <button type="button" id="landStrategy">الاستراتيجية</button>
     </div>
     <div>© 2026 IV PRODUCTION — جميع الحقوق محفوظة</div>
@@ -1427,7 +1431,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
 <script>
 (function(){
-  try{ console.log("IV_BUILD 20260921f"); window.IV_BUILD="20260921f"; }catch(e){}
+  try{ console.log("IV_BUILD 20260921g"); window.IV_BUILD="20260921g"; }catch(e){}
   var IV_SEED_DEMO=false;
   var localSeedOnly=false;
   var FB_CONFIG={
@@ -2221,6 +2225,12 @@ var $=function(id){return document.getElementById(id)};
     b.onclick=function(e){ if(e){e.preventDefault();e.stopPropagation();} forceUIReady(); go(b.getAttribute('data-v')); };
   });
   // تفويض أحداث — يعمل حتى لو تعطل onclick
+  
+  document.addEventListener('touchstart', function onceForce(){
+    try{ forceUIReady(); }catch(e){}
+    document.removeEventListener('touchstart', onceForce, true);
+  }, true);
+
   document.addEventListener('click', function(e){
     var b=e.target && e.target.closest && e.target.closest('.dock button[data-v]');
     if(!b) return;
