@@ -3,48 +3,40 @@
 <head>
 <meta charset="utf-8"/>
 <script>
-/* تحديث تلقائي — يتجاوز كاش سفاري بدون تدخل الزائر */
+/* تحديث خفيف — يتحقق من version.txt فقط بدون تحميل 3MB */
 (function(){
-  var BUILD="20260921e";
+  var BUILD="20260921f";
   window.IV_BUILD=BUILD;
   try{
     if(navigator.serviceWorker){
       navigator.serviceWorker.getRegistrations().then(function(rs){
-        rs.forEach(function(r){ try{ r.unregister(); }catch(e){} });
+        (rs||[]).forEach(function(r){ try{r.unregister()}catch(e){} });
       });
     }
   }catch(e0){}
   try{
-    if(window.caches && caches.keys){
+    if(window.caches&&caches.keys){
       caches.keys().then(function(ks){
-        ks.forEach(function(k){ try{ caches.delete(k); }catch(e){} });
+        (ks||[]).forEach(function(k){ try{caches.delete(k)}catch(e){} });
       });
     }
   }catch(e1){}
   var flag="iv_forced_"+BUILD;
-  if(sessionStorage.getItem(flag)==="1") return;
-  var url=location.pathname+(location.search&&location.search.indexOf("_ivb=")>=0?location.search:((location.search?"&":"?")+"_ivb="+BUILD))+location.hash;
-  fetch(location.pathname+"?_ivb="+BUILD+"&_t="+Date.now(), {
-    cache:"no-store",
-    headers:{"Cache-Control":"no-cache","Pragma":"no-cache"}
-  }).then(function(r){ return r.text(); }).then(function(html){
-    var m=html.match(/IV_BUILD:\s*([A-Za-z0-9._-]+)/);
-    var remote=m&&m[1];
+  if(sessionStorage.getItem(flag)==="1") {
+    try{ localStorage.setItem("iv_last_build", BUILD); }catch(e){}
+    return;
+  }
+  var base=location.pathname.replace(/[^\/]*$/,"");
+  fetch(base+"version.txt?t="+Date.now(), {cache:"no-store"}).then(function(r){
+    return r.text();
+  }).then(function(txt){
+    var remote=(txt||"").trim().split(/\s|\n/)[0];
     if(remote && remote!==BUILD){
       sessionStorage.setItem(flag,"1");
-      location.replace(location.pathname+"?_ivb="+encodeURIComponent(remote)+"&_t="+Date.now());
-    } else if(location.search.indexOf("_ivb=")===-1){
-      /* أول زيارة بعد التحديث: أعد التحميل مرة واحدة بعنوان بدون كاش */
-      var last=localStorage.getItem("iv_last_build");
-      if(last && last!==BUILD){
-        sessionStorage.setItem(flag,"1");
-        localStorage.setItem("iv_last_build", BUILD);
-        location.replace(location.pathname+"?_ivb="+BUILD+"&_t="+Date.now());
-        return;
-      }
-      localStorage.setItem("iv_last_build", BUILD);
+      localStorage.setItem("iv_last_build", remote);
+      location.replace(location.pathname+"?v="+encodeURIComponent(remote)+"&t="+Date.now());
     } else {
-      localStorage.setItem("iv_last_build", BUILD);
+      try{ localStorage.setItem("iv_last_build", BUILD); }catch(e){}
     }
   }).catch(function(){
     try{ localStorage.setItem("iv_last_build", BUILD); }catch(e){}
@@ -63,7 +55,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<!-- IV_BUILD: 20260921e -->
+<!-- IV_BUILD: 20260921f -->
 <title>IV PRODUCTION</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Mirza:wght@700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
@@ -761,7 +753,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
   <button type="button" class="enter" id="btnEnter">دخول الموقع</button>
   <div class="land-foot">
     <div class="land-links">
-      <span id="ivBuildTag" style="display:none">20260921e</span>
+      <span id="ivBuildTag" style="display:none">20260921f</span>
       <button type="button" id="landStrategy">الاستراتيجية</button>
     </div>
     <div>© 2026 IV PRODUCTION — جميع الحقوق محفوظة</div>
@@ -1435,7 +1427,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
 <script>
 (function(){
-  try{ console.log("IV_BUILD 20260921e"); window.IV_BUILD="20260921e"; }catch(e){}
+  try{ console.log("IV_BUILD 20260921f"); window.IV_BUILD="20260921f"; }catch(e){}
   var IV_SEED_DEMO=false;
   var localSeedOnly=false;
   var FB_CONFIG={
@@ -1868,6 +1860,12 @@ var $=function(id){return document.getElementById(id)};
   if(exitBtn){exitBtn.onclick=function(){try{if(window.parent&&window.parent!==window){window.parent.postMessage('iv-exit-demo','*');return}}catch(e){}};exitBtn.style.display=(window.parent&&window.parent!==window)?'':'none'}
 
     var deletedTracks=load('ivlive_deleted',[])||[];
+  // إذا المكتبة فاضية تمامًا — لا تثق بقائمة الحذف المحلية (قد تكون فاسدة)
+  if(!(load('ivlive_tracks',null)||[]).length && deletedTracks.length){
+    try{ localStorage.removeItem('ivlive_deleted'); }catch(e){}
+    deletedTracks=[];
+  }
+
   function markDeleted(id){
     id=String(id);
     if(deletedTracks.indexOf(id)<0) deletedTracks.push(id);
