@@ -5,7 +5,7 @@
 <script>
 /* تحديث خفيف — يتحقق من version.txt فقط بدون تحميل 3MB */
 (function(){
-  var BUILD="20260921h";
+  var BUILD="20260921i";
   window.IV_BUILD=BUILD;
   try{
     if(navigator.serviceWorker){
@@ -55,7 +55,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<!-- IV_BUILD: 20260921h -->
+<!-- IV_BUILD: 20260921i -->
 <title>IV PRODUCTION</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Mirza:wght@700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
@@ -104,8 +104,13 @@ svg{fill:currentColor}
 #land.show{opacity:1!important;pointer-events:auto!important}
 body.iv-in #land,body.iv-in #intro{display:none!important;opacity:0!important;pointer-events:none!important;z-index:-1!important}
 body.iv-in #app{opacity:1!important;pointer-events:auto!important;display:flex!important}
-body.iv-in .dock{pointer-events:auto!important;z-index:90!important}
-.dock button{min-height:48px;min-width:44px;position:relative;z-index:91}
+body.iv-in .dock{pointer-events:auto;z-index:48}
+.dock button{min-height:48px;min-width:44px;position:relative}
+/* أثناء المشغل الكامل: أخفِ الشريط السفلي تمامًا */
+body.pf-open .dock,
+body.pf-open .player-mini{display:none!important;pointer-events:none!important;visibility:hidden!important}
+#playerFull{z-index:60!important}
+#playerFull.open{z-index:60!important;pointer-events:auto!important}
 
 #intro{z-index:90;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--bg)}
 #intro:not(.show){display:none!important;pointer-events:none!important;z-index:-1!important}
@@ -757,7 +762,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
   <button type="button" class="enter" id="btnEnter">دخول الموقع</button>
   <div class="land-foot">
     <div class="land-links">
-      <span id="ivBuildTag" style="display:none">20260921h</span>
+      <span id="ivBuildTag" style="display:none">20260921i</span>
       <button type="button" id="landStrategy">الاستراتيجية</button>
     </div>
     <div>© 2026 IV PRODUCTION — جميع الحقوق محفوظة</div>
@@ -1431,7 +1436,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
 <script>
 (function(){
-  try{ console.log("IV_BUILD 20260921h"); window.IV_BUILD="20260921h"; }catch(e){}
+  try{ console.log("IV_BUILD 20260921i"); window.IV_BUILD="20260921i"; }catch(e){}
   var IV_SEED_DEMO=false;
   var localSeedOnly=false;
   var FB_CONFIG={
@@ -2177,7 +2182,7 @@ var $=function(id){return document.getElementById(id)};
   }
   function tryLogin(){var code=($('codeInput').value||'').trim().toUpperCase();if(!code){toast('أدخل الرمز');return}if(!enterAs(code))toast('رمز غير صحيح')}
   $('btnCode').onclick=tryLogin; $('codeInput').onkeydown=function(e){if(e.key==='Enter')tryLogin()};
-  $('out').onclick=function(){session=null;save('ivlive_session',null);stopRadio();audio.pause();jingle.pause();$('playerMini').classList.remove('show');$('playerFull').classList.remove('open');document.body.classList.remove('has-mini');if($('wrap'))$('wrap').classList.remove('has-mini');$('app').classList.remove('show');$('land').classList.add('show');go('home')};
+  $('out').onclick=function(){session=null;save('ivlive_session',null);stopRadio();audio.pause();jingle.pause();$('playerMini').classList.remove('show');setFullPlayerOpen(false);document.body.classList.remove('has-mini');if($('wrap'))$('wrap').classList.remove('has-mini');$('app').classList.remove('show');$('land').classList.add('show');go('home')};
   /* session restored after intro */
 
   $('themeBtn').onclick=function(){theme=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',theme);localStorage.setItem('iv_theme',theme)};
@@ -2824,13 +2829,13 @@ var $=function(id){return document.getElementById(id)};
     playTrack(queueList[queueIdx]);
   }
   $('miniPlay').onclick=function(e){e.stopPropagation();togglePlay()};
-  $('miniExp').onclick=function(e){e.stopPropagation();$('playerFull').classList.add('open')};
+  $('miniExp').onclick=function(e){e.stopPropagation();setFullPlayerOpen(true);document.body.classList.add('pf-open')};
   $('miniClose').onclick=function(e){
     e.stopPropagation();
     closePlayer();
   };
-  $('playerMini').onclick=function(e){if(e.target.closest('#miniClose'))return;$('playerFull').classList.add('open')};
-  $('pfClose').onclick=function(){$('playerFull').classList.remove('open')};
+  $('playerMini').onclick=function(e){if(e.target.closest('#miniClose'))return;setFullPlayerOpen(true);document.body.classList.add('pf-open')};
+  $('pfClose').onclick=function(){setFullPlayerOpen(false);document.body.classList.remove('pf-open')};
   $('pfPlay').onclick=togglePlay;
   function paintModes(){
     if($('pfShuffle')){
@@ -2950,13 +2955,19 @@ var $=function(id){return document.getElementById(id)};
     if(!radioOn){ skip(1); return; }
     playIdentThen(afterJingle);
   }
+  function setFullPlayerOpen(on){
+    var pf=$('playerFull'); if(!pf) return;
+    if(on){ pf.classList.add('open'); document.body.classList.add('pf-open'); }
+    else { pf.classList.remove('open'); document.body.classList.remove('pf-open'); }
+  }
   function closePlayer(){
     try{audio.pause()}catch(err){}
     try{jingle.pause()}catch(err){}
     hideBumper(); playingJingle=false; radioOn=false;
     if($('playerMini')) $('playerMini').classList.remove('show');
-    if($('playerFull')) $('playerFull').classList.remove('open');
+    if($('playerFull')) setFullPlayerOpen(false);
     document.body.classList.remove('has-mini');
+    document.body.classList.remove('pf-open');
     if($('wrap'))$('wrap').classList.remove('has-mini');
     setPlaying(false);
   }
