@@ -5,7 +5,7 @@
 <script>
 /* تحديث خفيف — يتحقق من version.txt فقط بدون تحميل 3MB */
 (function(){
-  var BUILD="20260921n";
+  var BUILD="20260921u";
   window.IV_BUILD=BUILD;
   try{
     if(navigator.serviceWorker){
@@ -55,7 +55,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<!-- IV_BUILD: 20260921n -->
+<!-- IV_BUILD: 20260921u -->
 <title>IV PRODUCTION</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Mirza:wght@700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
@@ -200,7 +200,7 @@ html[data-theme=dark] .btn.pri,html[data-theme=dark] .mbtn.pri{background:var(--
 .linkish{color:var(--a);font-weight:800;font-size:13px}
 
 .masonry{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.tile{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.tile{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
 .cover-wrap{position:relative}
 .tile-cover{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#e8dfd0;min-height:120px}
 /* new-track border runner — border-box only, no mask (Safari-safe) */
@@ -249,23 +249,74 @@ html[data-theme=dark] .tile.tile-new{
 .award-chip{display:flex;align-items:center;gap:4px;background:rgba(20,16,8,.78);border:1px solid rgba(232,195,106,.55);color:#f5e6b8;font-size:11px;font-weight:700;padding:5px 8px;border-radius:10px;flex-shrink:0}
 .award-chip svg{width:14px;height:14px}
 /* بطاقة ذهبية — أفضل أغنية 2025 */
+
+
+/* ===== GOLD — تموج مرئي خفيف بدون تعليق ===== */
 .tile.tile-gold{
-  background:linear-gradient(160deg,#f7e7b0 0%,#e8c36a 42%,#c9a227 100%);
-  border:1px solid rgba(168,128,30,.65);
-  box-shadow:0 10px 28px rgba(184,146,58,.38), inset 0 1px 0 rgba(255,255,255,.45);
+  position:relative;
+  isolation:isolate;
+  background:linear-gradient(165deg,#f8e9b0 0%,#e8c36a 48%,#d4a84b 100%);
+  border:2px solid #e8c36a;
+  box-shadow:0 0 14px rgba(232,195,106,.45),0 8px 20px rgba(0,0,0,.12);
+  overflow:hidden;
 }
-.tile.tile-gold .info{background:transparent}
-.tile.tile-gold .info b{color:#1a1410!important;font-weight:800}
+.tile.tile-gold::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:2;
+  pointer-events:none;
+  background:linear-gradient(
+    105deg,
+    transparent 0%,
+    transparent 36%,
+    rgba(255,255,255,.2) 44%,
+    rgba(255,255,255,.65) 50%,
+    rgba(255,230,160,.4) 56%,
+    transparent 64%,
+    transparent 100%
+  );
+  background-size:220% 100%;
+  background-repeat:no-repeat;
+  animation:goldShineMove 2.4s linear infinite;
+}
+@keyframes goldShineMove{
+  0%{ background-position:130% 0; }
+  100%{ background-position:-130% 0; }
+}
+.tile.tile-gold .cover-wrap{ position:relative; z-index:1; }
+.tile.tile-gold .info{
+  position:relative;
+  z-index:1;
+  background:linear-gradient(180deg,rgba(255,248,220,.96),rgba(232,195,106,.94));
+  border-top:1px solid rgba(255,255,255,.35);
+}
+.tile.tile-gold .tag-wrap,
+.tile.tile-gold .cover-bottom{ z-index:3; }
+.tile.tile-gold .info b{ color:#1a1410!important; font-weight:900; }
 .tile.tile-gold .info .stats,
-.tile.tile-gold .info small{color:#1a1410!important;opacity:.88}
-.tile.tile-gold .cover-wrap{box-shadow:inset 0 0 0 1px rgba(255,215,120,.35)}
+.tile.tile-gold .info small{ color:#1a1410!important; opacity:.9; font-weight:600; }
 .song-row.row-gold{
-  background:linear-gradient(90deg,#f7e7b0 0%,#e8c36a 50%,#d4a84b 100%)!important;
-  border:1px solid rgba(168,128,30,.55)!important;
-  box-shadow:0 6px 18px rgba(184,146,58,.28);
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  background:linear-gradient(100deg,#f8e9b4 0%,#e8c36a 55%,#d4a84b 100%)!important;
+  border:2px solid #e8c36a!important;
+  box-shadow:0 0 12px rgba(232,195,106,.4);
 }
-.song-row.row-gold .meta b{color:#1a1410!important}
-.song-row.row-gold .meta span{color:#1a1410!important;opacity:.88}
+.song-row.row-gold::before{
+  content:"";
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.5) 50%,transparent 65%);
+  background-size:220% 100%;
+  animation:goldShineMove 2.4s linear infinite;
+}
+.song-row.row-gold .meta,
+.song-row.row-gold img{ position:relative; z-index:1; }
+.song-row.row-gold .meta b{ color:#1a1410!important; font-weight:900; }
+.song-row.row-gold .meta span{ color:#1a1410!important; opacity:.9; font-weight:600; }
+
+
 .info{padding:9px 10px 11px}
 .info b{display:block;font-size:13px}
 .info small,.info .stats{color:var(--mute);font-size:11px}
@@ -799,7 +850,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
   <button type="button" class="enter" id="btnEnter">دخول الموقع</button>
   <div class="land-foot">
     <div class="land-links">
-      <span id="ivBuildTag" style="display:none">20260921n</span>
+      <span id="ivBuildTag" style="display:none">20260921u</span>
       <button type="button" id="landStrategy">الاستراتيجية</button>
     </div>
     <div>© 2026 IV PRODUCTION — جميع الحقوق محفوظة</div>
@@ -1172,24 +1223,41 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
         
         <div class="admin-sec" data-apanel="awards" style="display:none">
           <h3>منح جوائز</h3>
-          <p class="ident-meta">لمنح جوائز رسمية لأعمال قديمة أو جديدة. تُحفظ في السحابة.</p>
+          <p class="ident-meta">اختر العمل ثم نوع الجائزة والسنة من القوائم الجاهزة لتجنب أخطاء الكتابة. تُحفظ في السحابة.</p>
           <label class="fl">اختر العمل</label>
           <select class="fi" id="awardTrackSel"></select>
-          <label class="fl">نص الجائزة</label>
-          <input class="fi" id="awardLabel" placeholder="مثال: أفضل أغنية 2025"/>
-          <label class="fl">أو جاهزة</label>
-          <select class="fi" id="awardPreset">
-            <option value="">— اختر —</option>
+          <label class="fl">نوع الجائزة</label>
+          <select class="fi" id="awardTypeSel" size="5" style="height:auto;min-height:120px">
             <option value="أفضل أغنية">أفضل أغنية</option>
             <option value="أفضل تعاون">أفضل تعاون</option>
             <option value="أفضل إنتاج">أفضل إنتاج</option>
             <option value="جائزة الجمهور">جائزة الجمهور</option>
             <option value="عمل مميز">عمل مميز</option>
+            <option value="أفضل دس تراك">أفضل دس تراك</option>
+            <option value="أفضل قصة">أفضل قصة</option>
           </select>
+          <label class="fl">سنة الجائزة</label>
+          <select class="fi" id="awardYearSel" size="5" style="height:auto;min-height:120px">
+            <option value="2026">2026</option>
+            <option value="2025" selected>2025</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+            <option value="2022">2022</option>
+            <option value="2021">2021</option>
+            <option value="2020">2020</option>
+            <option value="2019">2019</option>
+            <option value="2018">2018</option>
+          </select>
+          <label class="fl">معاينة النص النهائي</label>
+          <input class="fi" id="awardLabel" readonly placeholder="يُبنى تلقائيًا من النوع والسنة"/>
           <div class="form-actions">
             <button type="button" class="btn pri" id="awardGrantBtn">منح الجائزة</button>
           </div>
           <div id="awardTrackInfo" style="margin-top:10px;font-size:12px;color:var(--mute)"></div>
+          <label class="fl" style="margin-top:14px">حذف جائزة من العمل</label>
+          <select class="fi" id="awardRemoveSel"></select>
+          <button type="button" class="btn" id="awardRemoveBtn" style="width:100%;margin-top:8px">حذف الجائزة المحددة</button>
+          <button type="button" class="btn ghost" id="awardDedupeBtn" style="width:100%;margin-top:6px">إزالة الجوائز المكررة من كل الأعمال</button>
         </div>
 <div class="admin-sec" data-apanel="titles">
           <h3>الألقاب</h3>
@@ -1513,7 +1581,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
 <script>
 (function(){
-  try{ console.log("IV_BUILD 20260921n"); window.IV_BUILD="20260921n"; }catch(e){}
+  try{ console.log("IV_BUILD 20260921u"); window.IV_BUILD="20260921u"; }catch(e){}
   var IV_SEED_DEMO=false;
   var localSeedOnly=false;
   var FB_CONFIG={
@@ -2088,12 +2156,22 @@ var $=function(id){return document.getElementById(id)};
       return '<option value="'+tr.id+'">'+esc(tr.title||'')+' — '+esc(artistLine(tr)||'')+aw+'</option>';
     }).join('');
   }
+  function buildAwardLabel(){
+    var ty=$('awardTypeSel')&&$('awardTypeSel').value;
+    var yr=$('awardYearSel')&&$('awardYearSel').value;
+    if(!ty) return '';
+    var label=ty+(yr?(' لسنة '+yr):'');
+    if($('awardLabel')) $('awardLabel').value=label;
+    return label;
+  }
+  if($('awardTypeSel')) $('awardTypeSel').onchange=buildAwardLabel;
+  if($('awardYearSel')) $('awardYearSel').onchange=buildAwardLabel;
+  setTimeout(buildAwardLabel, 0);
   if($('awardGrantBtn')) $('awardGrantBtn').onclick=function(){
     var id=$('awardTrackSel')&&$('awardTrackSel').value;
-    var label=(($('awardLabel')&&$('awardLabel').value)||'').trim();
-    if(!label && $('awardPreset')) label=($('awardPreset').value||'').trim();
+    var label=buildAwardLabel()||(($('awardLabel')&&$('awardLabel').value)||'').trim();
     if(!id){ toast('اختر عملًا'); return; }
-    if(!label){ toast('اكتب نص الجائزة'); return; }
+    if(!label){ toast('اختر نوع الجائزة والسنة'); return; }
     var tr=tracks.find(function(x){return String(x.id)===String(id)});
     if(!tr){ toast('العمل غير موجود'); return; }
     grantAward(tr, label);
@@ -2104,23 +2182,88 @@ var $=function(id){return document.getElementById(id)};
     fillAwardTrackSel();
     toast('تم منح الجائزة: '+label);
   };
+  function refreshAwardRemoveSel(tr){
+    var sel=$('awardRemoveSel'); if(!sel) return;
+    sel.innerHTML='<option value="">— اختر جائزة للحذف —</option>';
+    if(!tr||!tr.awards) return;
+    tr.awards.forEach(function(a,i){
+      sel.innerHTML+='<option value="'+i+'">'+esc(a)+'</option>';
+    });
+  }
   if($('awardTrackSel')) $('awardTrackSel').onchange=function(){
     var id=this.value;
     var tr=tracks.find(function(x){return String(x.id)===String(id)});
     var box=$('awardTrackInfo');
     if(!box) return;
-    if(!tr){ box.textContent=''; return; }
+    if(!tr){ box.textContent=''; refreshAwardRemoveSel(null); return; }
     box.textContent='الجوائز الحالية: '+((tr.awards&&tr.awards.length)?tr.awards.join(' · '):'لا يوجد');
+    refreshAwardRemoveSel(tr);
+  };
+  if($('awardRemoveBtn')) $('awardRemoveBtn').onclick=function(){
+    var id=$('awardTrackSel')&&$('awardTrackSel').value;
+    var idx=$('awardRemoveSel')&&$('awardRemoveSel').value;
+    if(!id||idx===''||idx==null){ toast('اختر العمل والجائزة'); return; }
+    var tr=tracks.find(function(x){return String(x.id)===String(id)});
+    if(!tr||!tr.awards) return;
+    var removed=tr.awards.splice(+idx,1);
+    tr.updatedAt=Date.now();
+    persistTracks();
+    try{ renderAll(); updateProfileUI(); }catch(e){}
+    fillAwardTrackSel();
+    refreshAwardRemoveSel(tr);
+    if($('awardTrackInfo')) $('awardTrackInfo').textContent='الجوائز الحالية: '+(tr.awards.length?tr.awards.join(' · '):'لا يوجد');
+    toast('تم حذف: '+(removed[0]||''));
+  };
+  if($('awardDedupeBtn')) $('awardDedupeBtn').onclick=function(){
+    var n=dedupeTrackAwards(false);
+    try{ renderAll(); updateProfileUI(); }catch(e){}
+    fillAwardTrackSel();
+    if(!n) toast('لا توجد تكرارات');
   };
 
   function isGoldAwardTrack(t){
     var aw=getTrackAwards(t);
     return aw.some(function(a){
       a=String(a||'');
-      // أفضل أغنية لسنة 2025 أو صيغ قريبة
-      return (/أفضل\s*أغنية/.test(a) && /2025/.test(a)) || a.indexOf('أفضل أغنية لسنة 2025')>=0;
+      // تطبيع بسيط للهمزات
+      var n=a.replace(/[أإآ]/g,'ا').replace(/ة/g,'ه');
+      // أفضل أغنية + سنة 2025 بأي صياغة
+      var best=/افضل\s*اغني/.test(n) || /جائزه?\s*افضل\s*اغني/.test(n);
+      var y2025=/2025/.test(a);
+      return best && y2025;
     });
   }
+  
+  function normalizeAwardKey(a){
+    var n=String(a||'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/\s+/g,' ').trim().toLowerCase();
+    if(/افضل\s*اغني/.test(n) && /2025/.test(n)) return 'best-song-2025';
+    if(/افضل\s*اغني/.test(n) && /2024/.test(n)) return 'best-song-2024';
+    if(/افضل\s*اغني/.test(n) && /2026/.test(n)) return 'best-song-2026';
+    return n;
+  }
+  function dedupeTrackAwards(silent){
+    var n=0;
+    (tracks||[]).forEach(function(tr){
+      if(!tr.awards||tr.awards.length<2) return;
+      var seen={}, out=[];
+      tr.awards.forEach(function(a){
+        var k=normalizeAwardKey(a);
+        if(seen[k]){ n++; return; }
+        seen[k]=1;
+        out.push(a);
+      });
+      if(out.length!==tr.awards.length){
+        tr.awards=out;
+        tr.updatedAt=Date.now();
+      }
+    });
+    if(n){
+      try{ persistTracks(); }catch(e){}
+      if(!silent) try{ toast('تم تنظيف '+n+' جائزة مكررة'); }catch(e){}
+    }
+    return n;
+  }
+
   function getTrackAwards(t){
     return (t && t.awards && t.awards.length) ? t.awards.slice() : [];
   }
@@ -4424,6 +4567,12 @@ $('pub').onclick=function(){
       function finishEdit(newCover){
         if(newCover){
           cur.cover=newCover;
+          cur.coverUpdatedAt=Date.now();
+          try{
+            if(!window._ivCovers) window._ivCovers={};
+            window._ivCovers[String(cur.id)]=newCover;
+            localStorage.setItem('ivlive_covers', JSON.stringify(window._ivCovers));
+          }catch(eCache){}
           try{
             if(cloudOn&&cloudDb) cloudDb.collection('iv').doc('cover_'+cur.id).set({data:newCover,updated:Date.now()}).catch(function(){});
           }catch(eC){}
@@ -4480,7 +4629,7 @@ $('pub').onclick=function(){
         tracks.unshift({
           id:id,title:t,artist:allNames.join(' · '),artists:allNames,
           owner:profile.code,owners:allCodes,ownerCodes:allCodes,
-          cover:small,audio:blobUrl,audioUrl:'',audioParts:parts||0,
+          cover:small,coverUpdatedAt:Date.now(),audio:blobUrl,audioUrl:'',audioParts:parts||0,
           category:cat,old:markOld,plays:0,likes:0,dislikes:0,
           date:pubDate,createdAt:Date.now(),updatedAt:Date.now(),awards:[],
           lyrics:(($('ly')&&$('ly').value)||'').trim(),lyricSync:!!($('lySyncOn')&&$('lySyncOn').checked),
@@ -4639,7 +4788,6 @@ $('pub').onclick=function(){
   function ensureCovers(force){
     try{
       if(!window._ivCovers) window._ivCovers={};
-      // كاش محلي للأغلفة
       if(!window._ivCoversLoaded){
         try{
           var raw=localStorage.getItem('ivlive_covers');
@@ -4647,66 +4795,63 @@ $('pub').onclick=function(){
         }catch(e){}
         window._ivCoversLoaded=true;
       }
-      // طبّق الكاش على الأغاني فورًا
       var applied=false;
       (tracks||[]).forEach(function(tr){
         if(!tr||!tr.id) return;
         var id=String(tr.id);
-        var has=tr.cover&&String(tr.cover).length>40;
-        if(!has && window._ivCovers[id]){
+        if((!tr.cover||String(tr.cover).length<40) && window._ivCovers[id]){
           tr.cover=window._ivCovers[id];
           applied=true;
         }
       });
-      if(applied){ try{renderAll();}catch(e){} }
+      if(applied){ try{ renderAll(); }catch(e){} }
 
       if(!cloudOn||!cloudDb) return;
-      var jobs=[];
+      if(window._ivCoverBusy) return;
+      var need=[];
       (tracks||[]).forEach(function(tr){
         if(!tr||!tr.id) return;
         var id=String(tr.id);
         var c=tr.cover?String(tr.cover):'';
-        if(!force && c.length>40 && (c.indexOf('data:')===0||c.indexOf('http')===0||c.indexOf('blob:')===0)) return;
-        if(!force && window._ivCoverFetched && window._ivCoverFetched[id]) return;
-        jobs.push(cloudGet('cover_'+id).then(function(cv2){
-          if(cv2 && String(cv2).length>20){
-            tr.cover=cv2;
-            window._ivCovers[id]=cv2;
-            if(!window._ivCoverFetched) window._ivCoverFetched={};
-            window._ivCoverFetched[id]=1;
-            // حدّث الصورة في الصفحة فورًا بدون إعادة رسم كاملة
-            try{
-              var imgs=document.querySelectorAll('img.tile-cover, .cover-wrap img, .tile img');
-              // ابحث بالـ tile data-id
-              var tile=document.querySelector('.tile[data-id="'+id+'"] img');
-              if(tile){ tile.src=cv2; tile.style.background='transparent'; }
-            }catch(eU){}
-            return true;
-          }
-          return false;
-        }).catch(function(){ return false; }));
+        if(!force && window._ivCoverFetched && window._ivCoverFetched[id] && c.length>40) return;
+        need.push(tr);
       });
-      if(jobs.length){
-        Promise.all(jobs).then(function(arr){
-          var any=arr.some(Boolean);
-          if(any){
-            try{ localStorage.setItem('ivlive_covers', JSON.stringify(window._ivCovers)); }catch(eS){
-              // إذا الكاش كبير — احفظ أول 40 فقط
-              try{
-                var slim={}, n=0;
-                Object.keys(window._ivCovers).forEach(function(k){
-                  if(n<40){ slim[k]=window._ivCovers[k]; n++; }
-                });
-                localStorage.setItem('ivlive_covers', JSON.stringify(slim));
-              }catch(e2){}
+      if(!need.length) return;
+      window._ivCoverBusy=true;
+      var changed=false;
+      var left=need.length;
+      need.forEach(function(tr){
+        var id=String(tr.id);
+        cloudDb.collection('iv').doc('cover_'+id).get().then(function(s){
+          if(s.exists){
+            var d=s.data()||{};
+            var cv2=d.data;
+            var cup=+d.updated||0;
+            if(cv2 && String(cv2).length>20){
+              var localCu=+tr.coverUpdatedAt||0;
+              if(cup>=localCu || !(tr.cover&&String(tr.cover).length>40)){
+                tr.cover=cv2;
+                tr.coverUpdatedAt=cup||Date.now();
+                window._ivCovers[id]=cv2;
+                changed=true;
+              }
             }
-            try{ renderAll(); }catch(eR){}
+          }
+          if(!window._ivCoverFetched) window._ivCoverFetched={};
+          window._ivCoverFetched[id]=1;
+        }).catch(function(){}).then(function(){
+          left--;
+          if(left<=0){
+            window._ivCoverBusy=false;
+            if(changed){
+              try{ localStorage.setItem('ivlive_covers', JSON.stringify(window._ivCovers)); }catch(eS){}
+              try{ renderAll(); }catch(eR){}
+            }
           }
         });
-      }
-    }catch(eAll){}
+      });
+    }catch(eAll){ window._ivCoverBusy=false; }
   }
-
   function recoverEmptyLibrary(){
     // إذا المكتبة فاضية رغم وجود سحابة — امسح المحلي الفاسد وأعد الجلب
     if(!cloudOn) return Promise.resolve(false);
@@ -4836,7 +4981,7 @@ $('pub').onclick=function(){
             IV_CLOUD_LOCK++;
             try{
               if(name==='users' && typeof val==='object'){ mergeUsers(val); saveLocal('ivlive_users', users); try{syncTrackArtistNames();syncArtistPhotos()}catch(eS2){} }
-              if(name==='tracks' && val && val.length){ localSeedOnly=false; mergeTracks(val); saveLocal('ivlive_tracks', tracks); try{ensureCovers();}catch(e){} }
+              if(name==='tracks' && val && val.length){ localSeedOnly=false; mergeTracks(val); try{dedupeTrackAwards(true);}catch(eD){} saveLocal('ivlive_tracks', tracks); try{ensureCovers();}catch(e){} }
               if(name==='news' && val && val.length!=null){ mergeNews(val); saveLocal('ivlive_news', news); }
               if(name==='artists' && val && val.length!=null){ mergeArtists(val); saveLocal('ivlive_artists', artistsList); }
               if(name==='votes' && val){ votesStore=val; saveLocal('ivlive_votes', votesStore); }
@@ -4957,17 +5102,34 @@ $('pub').onclick=function(){
       var id=String(t.id), L=map[id];
       if(!L){ map[id]=t; return; }
       var rt=t.updatedAt||0, lt=L.updatedAt||0;
+      // الأغلفة: لا تسمح لسحابة فارغة/قديمة بمسح غلاف أحدث محليًا
+      var rCov=t.cover&&String(t.cover).length>40;
+      var lCov=L.cover&&String(L.cover).length>40;
+      var rCu=+t.coverUpdatedAt||0, lCu=+L.coverUpdatedAt||0;
       if(rt>=lt){
-        t.cover=t.cover||L.cover;
+        if(lCov && (!rCov || lCu>rCu)) t.cover=L.cover;
+        else if(!t.cover) t.cover=L.cover;
+        if(lCu && (!rCu || lCu>rCu)) t.coverUpdatedAt=L.coverUpdatedAt;
+        else if(rCu) t.coverUpdatedAt=rCu;
         t.audioParts=t.audioParts||L.audioParts;
         t.audio=t.audio||L.audio;
         t.audioUrl=t.audioUrl||L.audioUrl;
         if(!t.createdAt && L.createdAt) t.createdAt=L.createdAt;
         if(!t.date && L.date) t.date=L.date;
+        // awards: دمج بدون فقدان
+        if(L.awards&&L.awards.length){
+          t.awards=t.awards||[];
+          L.awards.forEach(function(a){ if(t.awards.indexOf(a)<0) t.awards.push(a); });
+        }
         map[id]=keepStats(t,L);
       } else {
-        if(!L.cover && t.cover) L.cover=t.cover;
+        if(rCov && (!lCov || rCu>lCu)) { L.cover=t.cover; L.coverUpdatedAt=rCu||L.coverUpdatedAt; }
+        else if(!L.cover && t.cover) L.cover=t.cover;
         if(!L.audioParts && t.audioParts) L.audioParts=t.audioParts;
+        if(t.awards&&t.awards.length){
+          L.awards=L.awards||[];
+          t.awards.forEach(function(a){ if(L.awards.indexOf(a)<0) L.awards.push(a); });
+        }
         map[id]=keepStats(L,t);
       }
     });
@@ -5461,9 +5623,9 @@ $('pub').onclick=function(){
   window.go=go;
   window.renderAll=renderAll;
   applyCloud();
-  try{ ensureCovers(true); }catch(e){}
-  setTimeout(function(){ try{ ensureCovers(true); }catch(e){} }, 800);
-  setTimeout(function(){ try{ ensureCovers(true); }catch(e){} }, 2500);
+  try{ dedupeTrackAwards(true); }catch(eD){}
+  try{ ensureCovers(false); }catch(e){}
+  setTimeout(function(){ try{ ensureCovers(false); }catch(e){} }, 1500);
   // إعادة محاولة تلقائية كل 4 ثوانٍ إذا بقيت فارغة (أقصى 5 مرات)
   (function(){
     var tries=0;
@@ -5475,7 +5637,7 @@ $('pub').onclick=function(){
         return;
       }
       recoverEmptyLibrary();
-      try{ applyCloud(); ensureCovers(); }catch(e){}
+      try{ applyCloud(); }catch(e){}
     }, 4000);
   })();
   try{ if(window.__ivEntered){ var app=$("app"); if(app){ app.classList.add("show"); app.style.opacity="1"; app.style.display="flex"; } go("home"); renderAll(); } }catch(eBoot){}
