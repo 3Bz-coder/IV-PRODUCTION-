@@ -5,7 +5,7 @@
 <script>
 /* تحديث خفيف — يتحقق من version.txt فقط بدون تحميل 3MB */
 (function(){
-  var BUILD="20260921x";
+  var BUILD="20260922a";
   window.IV_BUILD=BUILD;
   try{
     if(navigator.serviceWorker){
@@ -55,7 +55,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<!-- IV_BUILD: 20260921x -->
+<!-- IV_BUILD: 20260922a -->
 <title>IV PRODUCTION</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Mirza:wght@700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
@@ -851,7 +851,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
   <button type="button" class="enter" id="btnEnter">دخول الموقع</button>
   <div class="land-foot">
     <div class="land-links">
-      <span id="ivBuildTag" style="display:none">20260921x</span>
+      <span id="ivBuildTag" style="display:none">20260922a</span>
       <button type="button" id="landStrategy">الاستراتيجية</button>
     </div>
     <div>© 2026 IV PRODUCTION — جميع الحقوق محفوظة</div>
@@ -1228,7 +1228,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
           <label class="fl">اختر العمل</label>
           <select class="fi" id="awardTrackSel"></select>
           <label class="fl">نوع الجائزة</label>
-          <select class="fi" id="awardTypeSel" size="5" style="height:auto;min-height:120px">
+          <select class="fi" id="awardTypeSel" size="8" style="height:auto;min-height:160px">
             <option value="أفضل أغنية">أفضل أغنية</option>
             <option value="أفضل تعاون">أفضل تعاون</option>
             <option value="أفضل إنتاج">أفضل إنتاج</option>
@@ -1236,6 +1236,28 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
             <option value="عمل مميز">عمل مميز</option>
             <option value="أفضل دس تراك">أفضل دس تراك</option>
             <option value="أفضل قصة">أفضل قصة</option>
+            <option value="أفضل أغنية سعيدة">أفضل أغنية سعيدة</option>
+            <option value="أفضل أغنية حزينة">أفضل أغنية حزينة</option>
+            <option value="أفضل دس تراك للشهر">أفضل دس تراك للشهر</option>
+            <option value="أفضل قصة للشهر">أفضل قصة للشهر</option>
+            <option value="أفضل أغنية سعيدة للشهر">أفضل أغنية سعيدة للشهر</option>
+            <option value="أفضل أغنية حزينة للشهر">أفضل أغنية حزينة للشهر</option>
+          </select>
+          <label class="fl">شهر الجائزة (اختياري)</label>
+          <select class="fi" id="awardMonthSel">
+            <option value="">— بدون شهر (سنوية) —</option>
+            <option value="يناير">يناير</option>
+            <option value="فبراير">فبراير</option>
+            <option value="مارس">مارس</option>
+            <option value="أبريل">أبريل</option>
+            <option value="مايو">مايو</option>
+            <option value="يونيو">يونيو</option>
+            <option value="يوليو">يوليو</option>
+            <option value="أغسطس">أغسطس</option>
+            <option value="سبتمبر">سبتمبر</option>
+            <option value="أكتوبر">أكتوبر</option>
+            <option value="نوفمبر">نوفمبر</option>
+            <option value="ديسمبر">ديسمبر</option>
           </select>
           <label class="fl">سنة الجائزة</label>
           <select class="fi" id="awardYearSel" size="5" style="height:auto;min-height:120px">
@@ -1582,7 +1604,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
 <script>
 (function(){
-  try{ console.log("IV_BUILD 20260921x"); window.IV_BUILD="20260921x"; }catch(e){}
+  try{ console.log("IV_BUILD 20260922a"); window.IV_BUILD="20260922a"; }catch(e){}
   var IV_SEED_DEMO=false;
   var localSeedOnly=false;
   var FB_CONFIG={
@@ -2176,7 +2198,12 @@ var $=function(id){return document.getElementById(id)};
     if(!track.awards) track.awards=[];
     if(track.awards.indexOf(label)===-1) track.awards.push(label);
     track.updatedAt=Date.now();
+    try{
+      if(window._ivWriteLast) window._ivWriteLast.tracks=0;
+      if(window._ivWriteTimers&&window._ivWriteTimers.tracks){ clearTimeout(window._ivWriteTimers.tracks); window._ivWriteTimers.tracks=null; }
+    }catch(eF){}
     persistTracks();
+    try{ if(typeof cloudPut==='function') cloudPut('tracks', tracks); }catch(eP){}
   }
 
   function fillAwardTrackSel(){
@@ -2190,13 +2217,17 @@ var $=function(id){return document.getElementById(id)};
   function buildAwardLabel(){
     var ty=$('awardTypeSel')&&$('awardTypeSel').value;
     var yr=$('awardYearSel')&&$('awardYearSel').value;
+    var mo=$('awardMonthSel')&&$('awardMonthSel').value;
     if(!ty) return '';
-    var label=ty+(yr?(' لسنة '+yr):'');
+    var label=ty;
+    if(mo) label+=' — '+mo;
+    if(yr) label+=' '+yr;
     if($('awardLabel')) $('awardLabel').value=label;
     return label;
   }
   if($('awardTypeSel')) $('awardTypeSel').onchange=buildAwardLabel;
   if($('awardYearSel')) $('awardYearSel').onchange=buildAwardLabel;
+  if($('awardMonthSel')) $('awardMonthSel').onchange=buildAwardLabel;
   setTimeout(buildAwardLabel, 0);
   if($('awardGrantBtn')) $('awardGrantBtn').onclick=function(){
     var id=$('awardTrackSel')&&$('awardTrackSel').value;
@@ -2237,8 +2268,15 @@ var $=function(id){return document.getElementById(id)};
     var tr=tracks.find(function(x){return String(x.id)===String(id)});
     if(!tr||!tr.awards) return;
     var removed=tr.awards.splice(+idx,1);
+    tr.awards=tr.awards.slice(); // نسخة جديدة
     tr.updatedAt=Date.now();
+    // فرض الكتابة فورًا (تجاوز التهدئة) عشان الحذف يثبت في السحابة
+    try{
+      if(window._ivWriteLast) window._ivWriteLast.tracks=0;
+      if(window._ivWriteTimers&&window._ivWriteTimers.tracks){ clearTimeout(window._ivWriteTimers.tracks); window._ivWriteTimers.tracks=null; }
+    }catch(eF){}
     persistTracks();
+    try{ if(typeof cloudPut==='function') cloudPut('tracks', tracks); }catch(eP){}
     try{ renderAll(); updateProfileUI(); }catch(e){}
     fillAwardTrackSel();
     refreshAwardRemoveSel(tr);
@@ -5148,10 +5186,18 @@ $('pub').onclick=function(){
         t.audioUrl=t.audioUrl||L.audioUrl;
         if(!t.createdAt && L.createdAt) t.createdAt=L.createdAt;
         if(!t.date && L.date) t.date=L.date;
-        // awards: دمج بدون فقدان
-        if(L.awards&&L.awards.length){
+        // awards: النسخة الأحدث تفوز بالكامل (عشان الحذف يشتغل ولا ترجع الجائزة)
+        var rUp=+t.updatedAt||0, lUp=+L.updatedAt||0;
+        if(rUp>lUp){
+          if(!t.awards) t.awards=[];
+        } else if(lUp>rUp){
+          t.awards=L.awards?L.awards.slice():[];
+          t.updatedAt=lUp;
+        } else {
           t.awards=t.awards||[];
-          L.awards.forEach(function(a){ if(t.awards.indexOf(a)<0) t.awards.push(a); });
+          if(L.awards&&L.awards.length){
+            L.awards.forEach(function(a){ if(t.awards.indexOf(a)<0) t.awards.push(a); });
+          }
         }
         map[id]=keepStats(t,L);
       } else {
