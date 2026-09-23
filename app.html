@@ -5,7 +5,7 @@
 <script>
 /* تحديث خفيف — يتحقق من version.txt فقط بدون تحميل 3MB */
 (function(){
-  var BUILD="20260922a";
+  var BUILD="20260922b";
   window.IV_BUILD=BUILD;
   try{
     if(navigator.serviceWorker){
@@ -55,7 +55,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<!-- IV_BUILD: 20260922a -->
+<!-- IV_BUILD: 20260922b -->
 <title>IV PRODUCTION</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Mirza:wght@700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
@@ -851,7 +851,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
   <button type="button" class="enter" id="btnEnter">دخول الموقع</button>
   <div class="land-foot">
     <div class="land-links">
-      <span id="ivBuildTag" style="display:none">20260922a</span>
+      <span id="ivBuildTag" style="display:none">20260922b</span>
       <button type="button" id="landStrategy">الاستراتيجية</button>
     </div>
     <div>© 2026 IV PRODUCTION — جميع الحقوق محفوظة</div>
@@ -1273,8 +1273,14 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
           </select>
           <label class="fl">معاينة النص النهائي</label>
           <input class="fi" id="awardLabel" readonly placeholder="يُبنى تلقائيًا من النوع والسنة"/>
+          <label class="fl" style="display:flex;align-items:center;gap:8px;margin-top:10px;cursor:pointer">
+            <input type="checkbox" id="awardGoldChk" style="width:18px;height:18px">
+            <span>اجعلها ذهبية (تأثير ذهبي على البطاقة) — اختياري</span>
+          </label>
+          <p class="ident-meta" style="margin-top:4px">لا يُفعّل الذهبي تلقائيًا؛ حدده فقط للجوائز التي تريد لها مظهرًا ذهبيًا.</p>
           <div class="form-actions">
             <button type="button" class="btn pri" id="awardGrantBtn">منح الجائزة</button>
+            <button type="button" class="btn" id="awardGoldOffBtn" style="margin-right:8px">إزالة الذهبي</button>
           </div>
           <div id="awardTrackInfo" style="margin-top:10px;font-size:12px;color:var(--mute)"></div>
           <label class="fl" style="margin-top:14px">حذف جائزة من العمل</label>
@@ -1604,7 +1610,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
 <script>
 (function(){
-  try{ console.log("IV_BUILD 20260922a"); window.IV_BUILD="20260922a"; }catch(e){}
+  try{ console.log("IV_BUILD 20260922b"); window.IV_BUILD="20260922b"; }catch(e){}
   var IV_SEED_DEMO=false;
   var localSeedOnly=false;
   var FB_CONFIG={
@@ -2193,10 +2199,11 @@ var $=function(id){return document.getElementById(id)};
   }
 
   function monthNameAr(m){return ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'][m-1]||''}
-  function grantAward(track, label){
+  function grantAward(track, label, makeGold){
     if(!track||!label) return;
     if(!track.awards) track.awards=[];
     if(track.awards.indexOf(label)===-1) track.awards.push(label);
+    if(makeGold) track.goldAward=true;
     track.updatedAt=Date.now();
     try{
       if(window._ivWriteLast) window._ivWriteLast.tracks=0;
@@ -2236,13 +2243,29 @@ var $=function(id){return document.getElementById(id)};
     if(!label){ toast('اختر نوع الجائزة والسنة'); return; }
     var tr=tracks.find(function(x){return String(x.id)===String(id)});
     if(!tr){ toast('العمل غير موجود'); return; }
-    grantAward(tr, label);
-    tr.updatedAt=Date.now();
-    persistTracks();
+    var makeGold=!($('awardGoldChk')&&!$('awardGoldChk').checked);
+    // فقط إذا محدد صراحة
+    makeGold=!!($('awardGoldChk')&&$('awardGoldChk').checked);
+    grantAward(tr, label, makeGold);
     try{ renderAll(); updateProfileUI(); }catch(e){}
     if($('awardLabel')) $('awardLabel').value='';
+    if($('awardGoldChk')) $('awardGoldChk').checked=false;
     fillAwardTrackSel();
-    toast('تم منح الجائزة: '+label);
+    refreshAwardRemoveSel(tr);
+    toast(makeGold?('تم منح الجائزة مع الذهبي: '+label):('تم منح الجائزة: '+label));
+  };
+  if($('awardGoldOffBtn')) $('awardGoldOffBtn').onclick=function(){
+    var id=$('awardTrackSel')&&$('awardTrackSel').value;
+    if(!id){ toast('اختر عملًا'); return; }
+    var tr=tracks.find(function(x){return String(x.id)===String(id)});
+    if(!tr){ toast('العمل غير موجود'); return; }
+    tr.goldAward=false;
+    tr.updatedAt=Date.now();
+    try{ if(window._ivWriteLast) window._ivWriteLast.tracks=0; }catch(e){}
+    persistTracks();
+    try{ cloudPut('tracks', tracks); }catch(e){}
+    try{ renderAll(); }catch(e){}
+    toast('تم إزالة التأثير الذهبي');
   };
   function refreshAwardRemoveSel(tr){
     var sel=$('awardRemoveSel'); if(!sel) return;
@@ -2268,9 +2291,9 @@ var $=function(id){return document.getElementById(id)};
     var tr=tracks.find(function(x){return String(x.id)===String(id)});
     if(!tr||!tr.awards) return;
     var removed=tr.awards.splice(+idx,1);
-    tr.awards=tr.awards.slice(); // نسخة جديدة
+    tr.awards=tr.awards.slice();
+    if(!tr.awards.length) tr.goldAward=false;
     tr.updatedAt=Date.now();
-    // فرض الكتابة فورًا (تجاوز التهدئة) عشان الحذف يثبت في السحابة
     try{
       if(window._ivWriteLast) window._ivWriteLast.tracks=0;
       if(window._ivWriteTimers&&window._ivWriteTimers.tracks){ clearTimeout(window._ivWriteTimers.tracks); window._ivWriteTimers.tracks=null; }
@@ -2280,7 +2303,7 @@ var $=function(id){return document.getElementById(id)};
     try{ renderAll(); updateProfileUI(); }catch(e){}
     fillAwardTrackSel();
     refreshAwardRemoveSel(tr);
-    if($('awardTrackInfo')) $('awardTrackInfo').textContent='الجوائز الحالية: '+(tr.awards.length?tr.awards.join(' · '):'لا يوجد');
+    if($('awardTrackInfo')) $('awardTrackInfo').textContent='الجوائز الحالية: '+(tr.awards.length?tr.awards.join(' · '):'لا يوجد')+(tr.goldAward?' · ذهبي':'');
     toast('تم حذف: '+(removed[0]||''));
   };
   if($('awardDedupeBtn')) $('awardDedupeBtn').onclick=function(){
@@ -2291,16 +2314,9 @@ var $=function(id){return document.getElementById(id)};
   };
 
   function isGoldAwardTrack(t){
-    var aw=getTrackAwards(t);
-    return aw.some(function(a){
-      a=String(a||'');
-      // تطبيع بسيط للهمزات
-      var n=a.replace(/[أإآ]/g,'ا').replace(/ة/g,'ه');
-      // أفضل أغنية + سنة 2025 بأي صياغة
-      var best=/افضل\s*اغني/.test(n) || /جائزه?\s*افضل\s*اغني/.test(n);
-      var y2025=/2025/.test(a);
-      return best && y2025;
-    });
+    if(!t) return false;
+    // الذهبي اختياري صراحة من لوحة الإدارة — ليس تلقائيًا لأي جائزة
+    return !!t.goldAward;
   }
   
   function normalizeAwardKey(a){
@@ -5186,18 +5202,21 @@ $('pub').onclick=function(){
         t.audioUrl=t.audioUrl||L.audioUrl;
         if(!t.createdAt && L.createdAt) t.createdAt=L.createdAt;
         if(!t.date && L.date) t.date=L.date;
-        // awards: النسخة الأحدث تفوز بالكامل (عشان الحذف يشتغل ولا ترجع الجائزة)
+        // awards + goldAward: النسخة الأحدث تفوز بالكامل
         var rUp=+t.updatedAt||0, lUp=+L.updatedAt||0;
         if(rUp>lUp){
           if(!t.awards) t.awards=[];
+          if(t.goldAward==null && L.goldAward!=null) t.goldAward=L.goldAward;
         } else if(lUp>rUp){
           t.awards=L.awards?L.awards.slice():[];
+          t.goldAward=!!L.goldAward;
           t.updatedAt=lUp;
         } else {
           t.awards=t.awards||[];
           if(L.awards&&L.awards.length){
             L.awards.forEach(function(a){ if(t.awards.indexOf(a)<0) t.awards.push(a); });
           }
+          t.goldAward=!!(t.goldAward||L.goldAward);
         }
         map[id]=keepStats(t,L);
       } else {
