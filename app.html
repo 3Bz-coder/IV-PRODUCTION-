@@ -5,7 +5,7 @@
 <script>
 /* تحديث خفيف — يتحقق من version.txt فقط بدون تحميل 3MB */
 (function(){
-  var BUILD="20260922c";
+  var BUILD="20260922d";
   window.IV_BUILD=BUILD;
   try{
     if(navigator.serviceWorker){
@@ -55,7 +55,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<!-- IV_BUILD: 20260922c -->
+<!-- IV_BUILD: 20260922d -->
 <title>IV PRODUCTION</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Mirza:wght@700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
@@ -851,7 +851,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
   <button type="button" class="enter" id="btnEnter">دخول الموقع</button>
   <div class="land-foot">
     <div class="land-links">
-      <span id="ivBuildTag" style="display:none">20260922c</span>
+      <span id="ivBuildTag" style="display:none">20260922d</span>
       <button type="button" id="landStrategy">الاستراتيجية</button>
     </div>
     <div>© 2026 IV PRODUCTION — جميع الحقوق محفوظة</div>
@@ -1611,7 +1611,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
 <script>
 (function(){
-  try{ console.log("IV_BUILD 20260922c"); window.IV_BUILD="20260922c"; }catch(e){}
+  try{ console.log("IV_BUILD 20260922d"); window.IV_BUILD="20260922d"; }catch(e){}
   var IV_SEED_DEMO=false;
   var localSeedOnly=false;
   var FB_CONFIG={
@@ -4460,33 +4460,7 @@ var $=function(id){return document.getElementById(id)};
     if($('stPlays')) $('stPlays').textContent=pl;
     if($('stAwards')) $('stAwards').textContent=aw;
     $('myGrid').innerHTML=grid(mine,'لا أعمال',{canDelete:true});bindTiles($('myGrid'), mine);
-    // إعادة بناء قائمة التعاون من الصفر — لا تبقي اختيارات سابقة
-    collabSel={};
-    var collabArtists=artistsList.filter(function(a){
-      var c=a.code||'';
-      if(c && c===profile.code) return false;
-      if(a.n && a.n===profile.name) return false;
-      // أضف من users إن وُجد كود
-      return true;
-    });
-    // تأكد من وجود كل المستخدمين (بما فيهم عبود) حتى لو ليسوا في artistsList
-    Object.keys(users||{}).forEach(function(c){
-      if(c===profile.code) return;
-      if(collabArtists.some(function(a){return a.code===c;})) return;
-      collabArtists.push({code:c, n:(users[c]&&users[c].name)||c});
-    });
-    $('collabPick').innerHTML=collabArtists.map(function(a){
-      var key=a.code||'';
-      if(!key) return '';
-      var label=(users[key]&&users[key].name)||a.n||key;
-      return '<span class="cpick" data-c="'+String(key)+'" data-n="'+String(label).replace(/"/g,'&quot;')+'">'+esc(label)+'</span>';
-    }).join('');
-    $('collabPick').querySelectorAll('.cpick').forEach(function(el){el.onclick=function(){
-      var key=el.getAttribute('data-c');
-      if(!key) return;
-      collabSel[key]=!collabSel[key];
-      el.classList.toggle('on',!!collabSel[key]);
-    }});
+    try{ fillCollabPick(); }catch(eFC){}
     if(profile.admin){
       $('usersList').innerHTML=Object.keys(users).map(function(c){return '<div style="margin-bottom:4px"><b dir="ltr">'+c+'</b> — '+users[c].name+(users[c].admin?' (إدارة)':'')+'</div>'}).join('');
       renderAdminNews(); renderAdminTracks(); bindAdminDeletes(); renderTitlesAdmin();
@@ -4501,7 +4475,7 @@ var $=function(id){return document.getElementById(id)};
   if($('menuEdit')) $('menuEdit').onclick=function(){ if($('profMenu')) $('profMenu').classList.remove('open'); if($('editBtn')) $('editBtn').click(); };
   if($('menuAdmin')) $('menuAdmin').onclick=function(){ if($('profMenu')) $('profMenu').classList.remove('open'); if($('adminToggle')) $('adminToggle').click(); };
   $('editBtn').onclick=function(){hideForms();$('adminBox').classList.add('hidden');$('editBox').classList.remove('hidden');$('en').value=profile.name;$('eb').value=profile.bio||'';if(typeof renderIconPicks==='function')renderIconPicks();pendingBanner=null;renderIconPicks();document.querySelectorAll('#accentDots .color-dot').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-c')===(profile.accent||'#e8c36a'))});};
-  $('pubBtn').onclick=function(){hideForms();$('adminBox').classList.add('hidden');collabSel={};updateProfileUI();resetPublishForm();$('publishBox').classList.remove('hidden');};
+  $('pubBtn').onclick=function(){hideForms();$('adminBox').classList.add('hidden');window._editTrackId=null;collabSel={};updateProfileUI();resetPublishForm();try{fillCollabPick();}catch(e){}$('publishBox').classList.remove('hidden');if($('pubHead'))$('pubHead').textContent='نشر عمل جديد';if($('pub'))$('pub').textContent='نشر / إرسال طلبات التعاون';};
   $('cancelEdit').onclick=hideForms;$('cancelPub').onclick=hideForms;
   function showAdminPanel(name){
     document.querySelectorAll('#adminTabs [data-atab]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-atab')===name); });
@@ -4642,6 +4616,36 @@ var $=function(id){return document.getElementById(id)};
     if($('mf')) $('mf').value='';
     if($('lyPrev')) $('lyPrev').removeAttribute('src');
   }
+  function fillCollabPick(){
+    collabSel={};
+    var box=$('collabPick');
+    if(!box) return;
+    var collabArtists=(artistsList||[]).filter(function(a){
+      var c=a.code||'';
+      if(c && profile && c===profile.code) return false;
+      if(a.n && profile && a.n===profile.name) return false;
+      return true;
+    });
+    Object.keys(users||{}).forEach(function(c){
+      if(profile && c===profile.code) return;
+      if(collabArtists.some(function(a){return a.code===c;})) return;
+      collabArtists.push({code:c, n:(users[c]&&users[c].name)||c});
+    });
+    box.innerHTML=collabArtists.map(function(a){
+      var key=a.code||'';
+      if(!key) return '';
+      var label=(users[key]&&users[key].name)||a.n||key;
+      return '<span class="cpick" data-c="'+String(key)+'" data-n="'+String(label).replace(/"/g,'&quot;')+'">'+esc(label)+'</span>';
+    }).join('');
+    box.querySelectorAll('.cpick').forEach(function(el){
+      el.onclick=function(){
+        var key=el.getAttribute('data-c');
+        if(!key) return;
+        collabSel[key]=!collabSel[key];
+        el.classList.toggle('on', !!collabSel[key]);
+      };
+    });
+  }
   function openEditTrack(id){
     var t=tracks.find(function(x){return String(x.id)===String(id)});
     if(!t){ toast('العمل غير موجود'); return; }
@@ -4649,8 +4653,8 @@ var $=function(id){return document.getElementById(id)};
     if($('adminBox')) $('adminBox').classList.add('hidden');
     $('publishBox').classList.remove('hidden');
     window._editTrackId=String(t.id);
-    if($('pubHead')) $('pubHead').textContent='تعديل عمل سابق';
-    if($('pub')) $('pub').textContent='حفظ التعديل والمزامنة';
+    if($('pubHead')) $('pubHead').textContent='تعديل عمل سابق + طلب تعاون';
+    if($('pub')) $('pub').textContent='حفظ التعديل / إرسال طلبات التعاون';
     if($('tt')) $('tt').value=t.title||'';
     if($('ly')) $('ly').value=t.lyrics||'';
     cover=t.cover||'';
@@ -4670,8 +4674,10 @@ var $=function(id){return document.getElementById(id)};
         if(src) prev.src=src;
       });
     }
+    // إظهار قائمة التعاون عند التعديل
+    try{ fillCollabPick(); }catch(eF){}
     go('profile');
-    toast('عدّل الكلمات أو فعّل التتبع ثم احفظ. الإحصائيات لن تُمس');
+    toast('يمكنك طلب تعاون من القائمة ثم احفظ. الإحصائيات لن تُمس');
   }
 $('pub').onclick=function(){
     if($('lySyncOn') && $('lySyncOn').checked){
@@ -4712,15 +4718,48 @@ $('pub').onclick=function(){
             if(cloudOn&&cloudDb) cloudDb.collection('iv').doc('cover_'+cur.id).set({data:newCover,updated:Date.now()}).catch(function(){});
           }catch(eC){}
         }
+        // طلب تعاون من التعديل — للأعمال القديمة والجديدة
+        var newPartners=Object.keys(collabSel||{}).filter(function(k){ return collabSel[k] && users[k]; });
+        var already=(cur.ownerCodes||cur.owners||[]).map(String);
+        var pending=(cur.pendingFor||[]).map(String);
+        var sent=0;
+        newPartners.forEach(function(pc){
+          pc=String(pc);
+          if(pc===String(profile.code)) return;
+          if(already.indexOf(pc)>=0) return; // متعاون حالي
+          if(pending.indexOf(pc)>=0) return; // طلب معلّق سابقًا
+          // لا نضيفه للمالكين قبل الموافقة
+          if(!cur.pendingFor) cur.pendingFor=[];
+          cur.pendingFor.push(pc);
+          cur.pending=true;
+          var toName=(users[pc]&&users[pc].name)||pc;
+          notifs.push({
+            id:Date.now()+Math.random(),
+            from:profile.name, fromCode:profile.code,
+            to:toName, toCode:pc,
+            trackId:cur.id, trackTitle:cur.title||t,
+            status:'pending', createdAt:Date.now()
+          });
+          sent++;
+        });
+        if(sent){
+          try{ if(window._ivWriteLast) window._ivWriteLast.notifs=0; }catch(eN){}
+          persistNotifs();
+        }
         var ns=artistNames(cur);
         if(ns.length){ cur.artists=ns; cur.artist=ns.join(' · '); }
+        cur.updatedAt=Date.now();
+        try{ if(window._ivWriteLast) window._ivWriteLast.tracks=0; }catch(eW){}
         persistTracks();
+        try{ if(typeof cloudPut==='function') cloudPut('tracks', tracks); }catch(eP){}
+        collabSel={};
         resetPublishForm();
         hideForms();
         updateProfileUI();
         renderHome();
         renderSongs();
-        toast('تم حفظ التعديل ومزامنته دون المساس بالإحصائيات');
+        if(sent) toast('تم الحفظ وإرسال '+sent+' طلب تعاون');
+        else toast('تم حفظ التعديل ومزامنته دون المساس بالإحصائيات');
       }
       if(cover && cover!==cur.cover && String(cover).indexOf('data:')===0){
         shrink(cover, 480, function(small){ finishEdit(small||cover); });
