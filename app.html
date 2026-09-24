@@ -5,7 +5,7 @@
 <script>
 /* تحديث خفيف — يتحقق من version.txt فقط بدون تحميل 3MB */
 (function(){
-  var BUILD="20260922e";
+  var BUILD="20260922g";
   window.IV_BUILD=BUILD;
   try{
     if(navigator.serviceWorker){
@@ -55,7 +55,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<!-- IV_BUILD: 20260922e -->
+<!-- IV_BUILD: 20260922g -->
 <title>IV PRODUCTION</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Mirza:wght@700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
@@ -851,7 +851,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
   <button type="button" class="enter" id="btnEnter">دخول الموقع</button>
   <div class="land-foot">
     <div class="land-links">
-      <span id="ivBuildTag" style="display:none">20260922e</span>
+      <span id="ivBuildTag" style="display:none">20260922g</span>
       <button type="button" id="landStrategy">الاستراتيجية</button>
     </div>
     <div>© 2026 IV PRODUCTION — جميع الحقوق محفوظة</div>
@@ -1611,7 +1611,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
 <script>
 (function(){
-  try{ console.log("IV_BUILD 20260922e"); window.IV_BUILD="20260922e"; }catch(e){}
+  try{ console.log("IV_BUILD 20260922g"); window.IV_BUILD="20260922g"; }catch(e){}
   var IV_SEED_DEMO=false;
   var localSeedOnly=false;
   var FB_CONFIG={
@@ -3143,15 +3143,14 @@ var $=function(id){return document.getElementById(id)};
     loadAudioParts(t).then(function(src){
       src=src||srcOf(t);
       if(!src){toast('تعذر تشغيل هذا العمل. انشره مرة أخرى.');return}
-      var isOwner=profile.code && String(t.owner)===String(profile.code);
-      if(!opts.noCount && !isOwner){
-        if(!playSeen[profile.code]) playSeen[profile.code]={};
-        if(!playSeen[profile.code][t.id]){
-          playSeen[profile.code][t.id]=1;
-          t.plays=(t.plays||0)+1;
-          save('ivlive_plays',playSeen);
-          persistTracks();
-        }
+      // عدّ الاستماع عند التشغيل الفعلي (بعد ثوانٍ من السماع) — لكل المستمعين بما فيهم المالك
+      window._ivPlayCountPending=null;
+      if(!opts.noCount){
+        window._ivPlayCountPending={
+          id:String(t.id),
+          started:Date.now(),
+          counted:false
+        };
       }
       applyNowPlaying(t);
       try{audio.pause()}catch(e){}
@@ -5888,6 +5887,51 @@ $('pub').onclick=function(){
 
   audio.addEventListener('play', function(){
     try{ ensureAudioGraph(); startAmbient(($('pfCover')&&$('pfCover').src)|| (currentTrack&&currentTrack.cover)); }catch(e){}
+    // بدء مراقبة العدّ عند التشغيل الفعلي
+    try{
+      var pend=window._ivPlayCountPending;
+      if(pend && !pend.counted && currentTrack && String(currentTrack.id)===String(pend.id)){
+        pend.playStarted=Date.now();
+      }
+    }catch(eP){}
+  });
+  // احتساب الاستماع بعد 3 ثوانٍ — متكرر للمستمعين، بدون عدّ صاحب الأغنية
+  audio.addEventListener('timeupdate', function(){
+    try{
+      var pend=window._ivPlayCountPending;
+      if(!pend || pend.counted) return;
+      if(!currentTrack || String(currentTrack.id)!==String(pend.id)) return;
+      if(audio.paused) return;
+      var tpos=audio.currentTime||0;
+      if(tpos<3 && !(pend.playStarted && (Date.now()-pend.playStarted)>3000)) return;
+      var uid=String((profile&&profile.code)||'guest');
+      var tr=tracks.find(function(x){return String(x.id)===String(pend.id);});
+      if(!tr){ pend.counted=true; return; }
+      // لا تُحسب استماعات صاحب العمل / أطراف التعاون لأغنيتهم
+      if(uid && uid!=='guest'){
+        if(String(tr.owner)===uid){ pend.counted=true; return; }
+        var oc=tr.ownerCodes||tr.owners||[];
+        if(oc.some(function(c){ return String(c)===uid; })){ pend.counted=true; return; }
+      }
+      // الاستماع المتكرر يُحسب بعد 20 ثانية من آخر عدّ
+      if(!playSeen[uid]) playSeen[uid]={};
+      var last=+playSeen[uid][pend.id]||0;
+      var now=Date.now();
+      if(last && (now-last)<20000){ pend.counted=true; return; }
+      pend.counted=true;
+      playSeen[uid][pend.id]=now;
+      try{ save('ivlive_plays', playSeen); }catch(eS){}
+      tr.plays=(+tr.plays||0)+1;
+      tr.updatedAt=now;
+      try{ if(window._ivWriteLast) window._ivWriteLast.tracks=0; }catch(eW){}
+      try{ persistTracks(); }catch(eP){}
+      try{ if(typeof cloudPut==='function') cloudPut('tracks', tracks); }catch(eC){}
+      try{
+        if(typeof renderHome==='function') renderHome();
+        if(typeof renderSongs==='function') renderSongs();
+        if(typeof updateProfileUI==='function') updateProfileUI();
+      }catch(eR){}
+    }catch(eAll){}
   });
 
   window.go=go;
