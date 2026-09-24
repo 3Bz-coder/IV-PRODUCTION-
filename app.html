@@ -5,7 +5,7 @@
 <script>
 /* تحديث خفيف — يتحقق من version.txt فقط بدون تحميل 3MB */
 (function(){
-  var BUILD="20260922b";
+  var BUILD="20260922c";
   window.IV_BUILD=BUILD;
   try{
     if(navigator.serviceWorker){
@@ -55,7 +55,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<!-- IV_BUILD: 20260922b -->
+<!-- IV_BUILD: 20260922c -->
 <title>IV PRODUCTION</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Mirza:wght@700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
@@ -851,7 +851,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
   <button type="button" class="enter" id="btnEnter">دخول الموقع</button>
   <div class="land-foot">
     <div class="land-links">
-      <span id="ivBuildTag" style="display:none">20260922b</span>
+      <span id="ivBuildTag" style="display:none">20260922c</span>
       <button type="button" id="landStrategy">الاستراتيجية</button>
     </div>
     <div>© 2026 IV PRODUCTION — جميع الحقوق محفوظة</div>
@@ -1230,6 +1230,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
           <label class="fl">نوع الجائزة</label>
           <select class="fi" id="awardTypeSel" size="8" style="height:auto;min-height:160px">
             <option value="أفضل أغنية">أفضل أغنية</option>
+            <option value="أفضل أغنية لسنة">أفضل أغنية لسنة</option>
             <option value="أفضل تعاون">أفضل تعاون</option>
             <option value="أفضل إنتاج">أفضل إنتاج</option>
             <option value="جائزة الجمهور">جائزة الجمهور</option>
@@ -1610,7 +1611,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
 <script>
 (function(){
-  try{ console.log("IV_BUILD 20260922b"); window.IV_BUILD="20260922b"; }catch(e){}
+  try{ console.log("IV_BUILD 20260922c"); window.IV_BUILD="20260922c"; }catch(e){}
   var IV_SEED_DEMO=false;
   var localSeedOnly=false;
   var FB_CONFIG={
@@ -2178,6 +2179,8 @@ var $=function(id){return document.getElementById(id)};
   function persistNotifs(){
     saveLocal('ivlive_notifs', notifs);
     if(!cloudOn) return;
+    // فرض الكتابة فورًا — طلبات التعاون حساسة للوقت
+    try{ if(window._ivWriteLast) window._ivWriteLast.notifs=0; }catch(e){}
     cloudGet('notifs').then(function(remote){
       if(remote && remote.length){
         IV_CLOUD_LOCK++;
@@ -3544,6 +3547,11 @@ var $=function(id){return document.getElementById(id)};
   function renderHome(){
     try{ syncTrackArtistNames(); }catch(eS){}
     var list=(tracks||[]).slice().sort(function(a,b){ return trackRecency(b)-trackRecency(a); });
+    // أعمال بانتظار تعاون: تظهر لصاحبها والأطراف المدعوّة فقط — ليست للجميع
+    list=list.filter(function(t){
+      if(!t.pending) return true;
+      return isMineTrack(t);
+    });
     if(q){var qq=q; list=list.filter(function(t){try{return (t.title+' '+artistLine(t)).indexOf(qq)>=0}catch(e){return (t.title||'').indexOf(qq)>=0}});}
     var tc=$('trackCount'); if(tc) tc.textContent=list.length+' عمل';
     var hg=$('homeGrid'); if(!hg) return;
@@ -4245,10 +4253,21 @@ var $=function(id){return document.getElementById(id)};
   function pendingForMe(){return notifs.filter(function(n){return n.status==='pending'&&(n.toCode===profile.code||n.to===profile.name)})}
   function updateBadge(){$('notifBadge').classList.toggle('on',pendingForMe().length>0)}
   function renderNotifs(){
-    var list=notifs.filter(function(n){return n.toCode===profile.code||n.fromCode===profile.code||n.to===profile.name||n.from===profile.name||profile.admin}).slice().reverse();
+    var myCode=String((profile&&profile.code)||'');
+    var myName=String((profile&&profile.name)||'');
+    function isForMe(n){
+      if(!n) return false;
+      if(n.toCode!=null && String(n.toCode)===myCode) return true;
+      if(n.to && myName && String(n.to)===myName) return true;
+      if(n.fromCode!=null && String(n.fromCode)===myCode) return true;
+      if(n.from && myName && String(n.from)===myName) return true;
+      return false;
+    }
+    var list=notifs.filter(function(n){ return isForMe(n) || !!(profile&&profile.admin); }).slice().reverse();
     if(!list.length){$('notifsList').innerHTML='<div class="empty">لا تنبيهات</div>';return}
     $('notifsList').innerHTML=list.map(function(n){
-      var acts=(n.status==='pending'&&(n.toCode===profile.code||n.to===profile.name))?'<div class="notif-acts"><button type="button" class="yes" data-id="'+n.id+'" data-a="yes">موافقة</button><button type="button" class="no" data-id="'+n.id+'" data-a="no">رفض</button></div>':'<div style="font-size:11px;color:var(--mute)">'+(n.status==='accepted'?'تمت الموافقة':n.status==='rejected'?'مرفوض':'قيد الانتظار')+'</div>';
+      var canAct=(n.status==='pending'&&(String(n.toCode)===myCode||String(n.to)===myName));
+      var acts=canAct?'<div class="notif-acts"><button type="button" class="yes" data-id="'+n.id+'" data-a="yes">موافقة</button><button type="button" class="no" data-id="'+n.id+'" data-a="no">رفض</button></div>':'<div style="font-size:11px;color:var(--mute)">'+(n.status==='accepted'?'تمت الموافقة':n.status==='rejected'?'مرفوض':'قيد الانتظار')+'</div>';
       return '<div class="notif"><b>طلب تعاون</b><p>من <b>'+esc(n.from)+'</b> للعمل «'+esc(n.trackTitle)+'» — إلى <b>'+esc(n.to)+'</b></p>'+acts+'</div>';
     }).join('');
     $('notifsList').querySelectorAll('[data-a]').forEach(function(btn){btn.onclick=function(){
@@ -4260,33 +4279,38 @@ var $=function(id){return document.getElementById(id)};
         if(tr){
           tr.ownerCodes=tr.ownerCodes||tr.owners||[];
           tr.artists=tr.artists||[];
+          // أضف صاحب الطلب + الموافق
           var fromCode=n.fromCode||'';
-          var fromNm=n.from||(fromCode&&users[fromCode]&&users[fromCode].name)||'';
-          if(fromCode && tr.ownerCodes.indexOf(fromCode)<0) tr.ownerCodes.push(fromCode);
-          if(fromNm && tr.artists.indexOf(fromNm)<0) tr.artists.push(fromNm);
-          var toCode=n.toCode||'';
-          var toNm=n.to||(toCode&&users[toCode]&&users[toCode].name)||'';
-          if(toCode && tr.ownerCodes.indexOf(toCode)<0) tr.ownerCodes.push(toCode);
-          if(toNm && tr.artists.indexOf(toNm)<0) tr.artists.push(toNm);
-          if(tr.owner && tr.ownerCodes.indexOf(tr.owner)<0) tr.ownerCodes.push(tr.owner);
+          var toCode=n.toCode||profile.code||'';
+          [fromCode, toCode, tr.owner].forEach(function(c){
+            if(!c) return;
+            c=String(c);
+            if(tr.ownerCodes.indexOf(c)<0) tr.ownerCodes.push(c);
+          });
           tr.owners=tr.ownerCodes.slice();
-          try{
-            var ns=[];
-            tr.ownerCodes.forEach(function(c){
-              var nm=(users[c]&&users[c].name)||'';
-              if(nm && ns.indexOf(nm)<0) ns.push(nm);
-            });
-            if(ns.length) tr.artists=ns;
-          }catch(eN){}
+          // أسماء من الكودات — تظهر على الغلاف بعد الموافقة
+          var ns=[];
+          tr.ownerCodes.forEach(function(c){
+            var nm=(users[c]&&users[c].name)||'';
+            if(nm && ns.indexOf(nm)<0) ns.push(nm);
+          });
+          if(n.from && ns.indexOf(n.from)<0) ns.push(n.from);
+          if(n.to && ns.indexOf(n.to)<0) ns.push(n.to);
+          if(ns.length) tr.artists=ns;
           tr.artist=(tr.artists||[]).join(' · ');
-          if(tr.pendingFor && toCode){
-            tr.pendingFor=tr.pendingFor.filter(function(c){ return String(c)!==String(toCode); });
+          if(tr.pendingFor){
+            tr.pendingFor=tr.pendingFor.filter(function(c){
+              return String(c)!==String(toCode) && String(c)!==String(profile.code);
+            });
           }
           if(!tr.pendingFor || !tr.pendingFor.length) tr.pending=false;
           tr.updatedAt=Date.now();
+          try{ if(window._ivWriteLast) window._ivWriteLast.tracks=0; }catch(eW){}
           persistTracks();
+          try{ if(typeof cloudPut==='function') cloudPut('tracks', tracks); }catch(eC){}
           try{ syncTrackArtistNames(); }catch(eS){}
           try{ renderAll(); }catch(eR){}
+          toast('تمت الموافقة — الأسماء على الغلاف: '+(tr.artist||''));
         }
       }
       persistNotifs();updateBadge();renderNotifs();renderHome();renderSongs();
@@ -4436,13 +4460,30 @@ var $=function(id){return document.getElementById(id)};
     if($('stPlays')) $('stPlays').textContent=pl;
     if($('stAwards')) $('stAwards').textContent=aw;
     $('myGrid').innerHTML=grid(mine,'لا أعمال',{canDelete:true});bindTiles($('myGrid'), mine);
-    $('collabPick').innerHTML=artistsList.filter(function(a){return a.code!==profile.code && a.n!==profile.name}).map(function(a){
-      var key=a.code||a.n;
-      var label=(a.code&&users[a.code]&&users[a.code].name)||a.n;
-      return '<span class="cpick '+(collabSel[key]?'on':'')+'" data-n="'+String(a.n).replace(/"/g,'&quot;')+'" data-c="'+String(a.code||'')+'">'+label+'</span>';
+    // إعادة بناء قائمة التعاون من الصفر — لا تبقي اختيارات سابقة
+    collabSel={};
+    var collabArtists=artistsList.filter(function(a){
+      var c=a.code||'';
+      if(c && c===profile.code) return false;
+      if(a.n && a.n===profile.name) return false;
+      // أضف من users إن وُجد كود
+      return true;
+    });
+    // تأكد من وجود كل المستخدمين (بما فيهم عبود) حتى لو ليسوا في artistsList
+    Object.keys(users||{}).forEach(function(c){
+      if(c===profile.code) return;
+      if(collabArtists.some(function(a){return a.code===c;})) return;
+      collabArtists.push({code:c, n:(users[c]&&users[c].name)||c});
+    });
+    $('collabPick').innerHTML=collabArtists.map(function(a){
+      var key=a.code||'';
+      if(!key) return '';
+      var label=(users[key]&&users[key].name)||a.n||key;
+      return '<span class="cpick" data-c="'+String(key)+'" data-n="'+String(label).replace(/"/g,'&quot;')+'">'+esc(label)+'</span>';
     }).join('');
     $('collabPick').querySelectorAll('.cpick').forEach(function(el){el.onclick=function(){
-      var key=el.getAttribute('data-c')||el.getAttribute('data-n');
+      var key=el.getAttribute('data-c');
+      if(!key) return;
       collabSel[key]=!collabSel[key];
       el.classList.toggle('on',!!collabSel[key]);
     }});
@@ -4691,7 +4732,7 @@ $('pub').onclick=function(){
     if(!mp3){toast('اختر ملف الصوت');return}if(!t){toast('اكتب العنوان');return}if(!cover){toast('اختر غلافاً');return}
     if(mp3.size>8000000){toast('الملف أكبر من 8MB. صغّر الجودة ثم أعد المحاولة.');return}
     var id=Date.now(),blobUrl=URL.createObjectURL(mp3);audioMem[id]=blobUrl;
-    var partners=Object.keys(collabSel).filter(function(k){return collabSel[k]});
+    var partners=Object.keys(collabSel).filter(function(k){return collabSel[k] && users[k];});
     var markOld=!!(window._ivOldOn);
     var todayStr=new Date().toISOString().slice(0,10);
     var od=($('oldDate')&&$('oldDate').value)||'';
@@ -4718,25 +4759,29 @@ $('pub').onclick=function(){
     var btn=$('pub'); if(btn){btn.disabled=true;btn.textContent='جاري تجهيز الملف...'}
     shrink(cover,480,function(small){
       function done(parts, note){
-        var allNames=[profile.name].concat(partnerNames);
-        var allCodes=[profile.code].concat(partnerCodes);
+        // قبل قبول التعاون: المالك فقط — لا تُفعّل على كل الأطراف ولا تظهر أسماؤهم على الغلاف
+        var ownerOnly=[profile.code];
+        var nameOnly=[profile.name];
         tracks.unshift({
-          id:id,title:t,artist:allNames.join(' · '),artists:allNames,
-          owner:profile.code,owners:allCodes,ownerCodes:allCodes,
+          id:id,title:t,artist:nameOnly.join(' · '),artists:nameOnly.slice(),
+          owner:profile.code,owners:ownerOnly.slice(),ownerCodes:ownerOnly.slice(),
           cover:small,coverUpdatedAt:Date.now(),audio:blobUrl,audioUrl:'',audioParts:parts||0,
           category:cat,old:markOld,plays:0,likes:0,dislikes:0,
-          date:pubDate,createdAt:Date.now(),updatedAt:Date.now(),awards:[],
+          date:pubDate,createdAt:Date.now(),updatedAt:Date.now(),awards:[],goldAward:false,
           lyrics:(($('ly')&&$('ly').value)||'').trim(),lyricSync:!!($('lySyncOn')&&$('lySyncOn').checked),
           pending:partnerCodes.length>0,pendingFor:partnerCodes.slice()
         });
         partnerCodes.forEach(function(pc,i){
+          var toName=(users[pc]&&users[pc].name)||partnerNames[i]||pc;
           notifs.push({
             id:Date.now()+Math.random()+i,
             from:profile.name,fromCode:profile.code,
-            to:partnerNames[i]||pc,toCode:pc,
+            to:toName,toCode:String(pc),
             trackId:id,trackTitle:t,status:'pending',createdAt:Date.now()
           });
         });
+        // فرض حفظ الإشعارات فورًا للسحابة
+        try{ if(window._ivWriteLast) window._ivWriteLast.notifs=0; }catch(eN){}
         persistNotifs();persistTracks();
         $('mf').value='';$('cf').value='';$('tt').value='';if($('ly'))$('ly').value='';if($('lySyncOn'))$('lySyncOn').checked=false;if($('lySyncBox'))$('lySyncBox').classList.add('hidden');$('cp').innerHTML='';$('mn').textContent='';cover=null;collabSel={};
         hideForms();renderAll();go('profile');
