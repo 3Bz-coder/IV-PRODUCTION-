@@ -5,7 +5,7 @@
 <script>
 /* تحديث خفيف — يتحقق من version.txt فقط بدون تحميل 3MB */
 (function(){
-  var BUILD="20260922d";
+  var BUILD="20260922e";
   window.IV_BUILD=BUILD;
   try{
     if(navigator.serviceWorker){
@@ -55,7 +55,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<!-- IV_BUILD: 20260922d -->
+<!-- IV_BUILD: 20260922e -->
 <title>IV PRODUCTION</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Mirza:wght@700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
@@ -851,7 +851,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
   <button type="button" class="enter" id="btnEnter">دخول الموقع</button>
   <div class="land-foot">
     <div class="land-links">
-      <span id="ivBuildTag" style="display:none">20260922d</span>
+      <span id="ivBuildTag" style="display:none">20260922e</span>
       <button type="button" id="landStrategy">الاستراتيجية</button>
     </div>
     <div>© 2026 IV PRODUCTION — جميع الحقوق محفوظة</div>
@@ -1611,7 +1611,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
 <script>
 (function(){
-  try{ console.log("IV_BUILD 20260922d"); window.IV_BUILD="20260922d"; }catch(e){}
+  try{ console.log("IV_BUILD 20260922e"); window.IV_BUILD="20260922e"; }catch(e){}
   var IV_SEED_DEMO=false;
   var localSeedOnly=false;
   var FB_CONFIG={
@@ -2157,24 +2157,36 @@ var $=function(id){return document.getElementById(id)};
     });
   }
   function mergeNews(remote){
-    if(!remote || !remote.length) return;
+    if(!remote || !Array.isArray(remote)) return;
+    // السحابة أساس القائمة — حتى تُحذف الأخبار القديمة عند الجميع
     var map={};
-    (news||[]).forEach(function(n){ if(n&&n.id) map[String(n.id)]=n; });
     remote.forEach(function(n){
       if(!n) return;
       var id=String(n.id||'');
       if(!id) return;
-      var L=map[id];
-      if(!L){ map[id]=n; return; }
-      var rt=+n.updatedAt||0, lt=+L.updatedAt||0;
-      if(rt>lt) map[id]=n;
-      else {
-        if(!L.img && n.img) L.img=n.img;
-        if(!L.title && n.title) L.title=n.title;
-        map[id]=L;
+      map[id]=n;
+    });
+    // احتفظ بالخبر المحلي فقط إن كان أحدث من السحابة أو نُشر للتو (أقل من 15 دقيقة) وما زال غير موجود هناك
+    (news||[]).forEach(function(n){
+      if(!n||!n.id) return;
+      var id=String(n.id);
+      var L=n, R=map[id];
+      if(!R){
+        var age=Date.now()-(+L.updatedAt||+L.createdAt||0);
+        if(age<15*60*1000) map[id]=L; // منشور محلي لم يصل السحابة بعد
+        // وإلا: خبر محذوف أو قديم — لا نُبقيه
+        return;
+      }
+      var rt=+R.updatedAt||0, lt=+L.updatedAt||0;
+      if(lt>rt) map[id]=L;
+      else if(rt===lt){
+        if(!R.img && L.img) R.img=L.img;
+        if(!R.title && L.title) R.title=L.title;
+        map[id]=R;
       }
     });
     news=normalizeNews(Object.keys(map).map(function(k){return map[k];}));
+    try{ localStorage.setItem('ivlive_news', JSON.stringify(news)); }catch(e){}
   }
   function persistNotifs(){
     saveLocal('ivlive_notifs', notifs);
@@ -4674,10 +4686,76 @@ var $=function(id){return document.getElementById(id)};
         if(src) prev.src=src;
       });
     }
-    // إظهار قائمة التعاون عند التعديل
+    // إظهار قائمة التعاون + أطراف حالية قابلة للإزالة
     try{ fillCollabPick(); }catch(eF){}
+    try{ renderCurrentCollabs(t); }catch(eC){}
     go('profile');
-    toast('يمكنك طلب تعاون من القائمة ثم احفظ. الإحصائيات لن تُمس');
+    toast('يمكنك طلب تعاون أو إزالة طرف حالي ثم احفظ');
+  }
+  function renderCurrentCollabs(t){
+    var host=$('collabCurrent');
+    if(!host){
+      var pick=$('collabPick');
+      if(!pick||!pick.parentNode) return;
+      host=document.createElement('div');
+      host.id='collabCurrent';
+      host.style.cssText='margin-top:10px';
+      pick.parentNode.insertBefore(host, pick.nextSibling);
+    }
+    if(!t){ host.innerHTML=''; return; }
+    var codes=(t.ownerCodes||t.owners||[]).map(String).filter(function(c){
+      return c && profile && String(c)!==String(profile.code);
+    });
+    // صاحب الأغنية فقط يزيل
+    if(!codes.length){
+      host.innerHTML='<p class="ident-meta">لا يوجد أطراف تعاون حالية على هذا العمل</p>';
+      return;
+    }
+    host.innerHTML='<label class="fl">أطراف التعاون الحالية — اضغط لإزالة</label><div style="display:flex;flex-wrap:wrap;gap:8px">'+
+      codes.map(function(c){
+        var nm=(users[c]&&users[c].name)||c;
+        var canRemove=profile && (String(t.owner)===String(profile.code) || String(c)===String(profile.code));
+        if(!canRemove) return '<span class="cpick" style="opacity:.7">'+esc(nm)+'</span>';
+        return '<button type="button" class="cpick on" data-rm-collab="'+esc(c)+'" style="cursor:pointer;border:none">'+esc(nm)+' ×</button>';
+      }).join('')+'</div>';
+    host.querySelectorAll('[data-rm-collab]').forEach(function(btn){
+      btn.onclick=function(){
+        var code=btn.getAttribute('data-rm-collab');
+        removeCollabPartner(t.id, code);
+        var cur=tracks.find(function(x){return String(x.id)===String(t.id)});
+        renderCurrentCollabs(cur||t);
+      };
+    });
+  }
+  function removeCollabPartner(trackId, code){
+    var tr=tracks.find(function(x){return String(x.id)===String(trackId)});
+    if(!tr||!code) return;
+    var my=String((profile&&profile.code)||'');
+    var isOwner=String(tr.owner)===my;
+    var isSelf=String(code)===my;
+    if(!isOwner && !isSelf){ toast('فقط صاحب العمل أو الطرف نفسه يمكنه الإزالة'); return; }
+    code=String(code);
+    tr.ownerCodes=(tr.ownerCodes||tr.owners||[]).filter(function(c){return String(c)!==code;});
+    if(tr.owner && String(tr.owner)===code){
+      // لا تحذف المالك الأساسي
+      if(tr.ownerCodes.indexOf(tr.owner)<0) tr.ownerCodes.unshift(tr.owner);
+    }
+    tr.owners=tr.ownerCodes.slice();
+    tr.pendingFor=(tr.pendingFor||[]).filter(function(c){return String(c)!==code;});
+    if(!tr.pendingFor.length) tr.pending=false;
+    var ns=[];
+    tr.ownerCodes.forEach(function(c){
+      var nm=(users[c]&&users[c].name)||'';
+      if(nm && ns.indexOf(nm)<0) ns.push(nm);
+    });
+    tr.artists=ns;
+    tr.artist=ns.join(' · ');
+    tr.updatedAt=Date.now();
+    try{ if(window._ivWriteLast) window._ivWriteLast.tracks=0; }catch(e){}
+    persistTracks();
+    try{ cloudPut('tracks', tracks); }catch(e){}
+    try{ renderAll(); }catch(e){}
+    toast('تمت إزالة '+(users[code]&&users[code].name||code)+' من التعاون');
   }
 $('pub').onclick=function(){
     if($('lySyncOn') && $('lySyncOn').checked){
@@ -5152,17 +5230,28 @@ $('pub').onclick=function(){
       }
       if(cloudOn && cloudDb && !window._ivLive){
         window._ivLive=true;
-        /* ===== خطة توفير الحصة: بدون onSnapshot (كان يستهلك آلاف القراءات) =====
-         مزامنة دورية كل 4 دقائق + مزامنة عند فتح الصفحة فقط */
+        /* ===== خطة توفير الحصة: بدون onSnapshot =====
+         مزامنة كاملة كل 4 دقائق + الأخبار كل 90 ثانية */
       if(!window._ivPollStarted){
         window._ivPollStarted=true;
-        // مزامنة أولى بعد ثانيتين (بعد تحميل المحلي)
         setTimeout(function(){ try{ applyCloud(true); }catch(e){} }, 2000);
-        // ثم كل 4 دقائق فقط
         setInterval(function(){
           if(window.IV_QUOTA_HIT && Date.now()<window.IV_QUOTA_HIT) return;
           try{ applyCloud(false); }catch(e){}
         }, 4*60*1000);
+        // الأخبار وحدها — قراءة واحدة خفيفة كل 90 ثانية
+        setInterval(function(){
+          if(window.IV_QUOTA_HIT && Date.now()<window.IV_QUOTA_HIT) return;
+          if(!cloudOn) return;
+          try{
+            cloudGet('news').then(function(remote){
+              if(remote && Array.isArray(remote)){
+                mergeNews(remote);
+                try{ renderNews(); }catch(eR){}
+              }
+            });
+          }catch(eN){}
+        }, 90*1000);
       }
       }
     }).catch(function(){});
