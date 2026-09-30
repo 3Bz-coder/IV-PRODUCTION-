@@ -831,6 +831,52 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
 .pf-rail-l .pf-led{margin:1px 0;width:4px;transform-origin:right center;transition:transform .06s linear,opacity .28s ease}
 
 </style>
+
+<style id="iv-awards-tournament-v2">
+.cer-tournament{width:min(760px,96vw);margin:auto;text-align:center}
+.cer-kicker{font-family:"Archivo Black",sans-serif;letter-spacing:.18em;color:#e8c36a;font-size:11px;margin-bottom:8px}
+.cer-big-title{font-size:clamp(24px,6vw,38px);font-weight:900;margin:0 0 7px}
+.cer-sub{color:#cbbfae;font-size:12px;line-height:1.8;margin-bottom:16px}
+.cer-bracket-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;align-items:center}
+.cer-seat{background:rgba(255,255,255,.045);border:1px solid rgba(232,195,106,.18);border-radius:15px;padding:9px;text-align:right;min-width:0}
+.cer-seat .seat-no{font-size:9px;color:#e8c36a;font-weight:900}
+.cer-seat .seat-song{display:flex;align-items:center;gap:7px;margin-top:5px;min-width:0}
+.cer-seat img{width:38px;height:38px;border-radius:10px;object-fit:cover;flex:none}
+.cer-seat b{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cer-seat span{display:block;color:#cbbfae;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cer-match{width:min(560px,96vw);margin:auto}
+.cer-round{font-family:"Archivo Black",sans-serif;color:#e8c36a;font-size:11px;letter-spacing:.14em;margin-bottom:8px}
+.cer-match-title{font-size:clamp(21px,5vw,30px);font-weight:900;margin:0 0 4px}
+.cer-match-hint{color:#cbbfae;font-size:11px;margin-bottom:14px}
+.cer-versus{display:grid;grid-template-columns:1fr 64px 1fr;gap:10px;align-items:center}
+.cer-side{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.10);border-radius:20px;padding:12px;cursor:pointer;transition:.2s}
+.cer-side.selected{border-color:#e8c36a;background:rgba(232,195,106,.12);box-shadow:0 0 0 2px rgba(232,195,106,.12)}
+.cer-side img{width:min(150px,27vw);aspect-ratio:1;border-radius:17px;object-fit:cover;margin:auto;display:block}
+.cer-side b{display:block;margin-top:9px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cer-side span{display:block;color:#cbbfae;font-size:10px;margin-top:3px}
+.cer-vs{font-family:"Archivo Black",sans-serif;color:#e8c36a;font-size:18px}
+.cer-side .side-stat{margin-top:8px;color:#e8c36a;font-size:10px;font-weight:800}
+.cer-vote-note{margin:12px 0;color:#cbbfae;font-size:11px;min-height:18px}
+.cer-vote-btn{width:100%;border:0;border-radius:14px;padding:13px;background:linear-gradient(135deg,#c9a227,#e8c36a);color:#1c1610;font-weight:900}
+.cer-vote-btn:disabled{opacity:.38}
+.cer-tiebreak{margin-top:12px;padding:10px;border:1px solid rgba(232,195,106,.25);border-radius:14px;color:#f2dfaa;background:rgba(232,195,106,.07);font-size:11px;line-height:1.7}
+.cer-bracket-note{margin-top:13px;color:#cbbfae;font-size:10px}
+.cer-champion{position:relative;overflow:hidden}
+.cer-champion .champ-glow{position:absolute;inset:-40%;background:radial-gradient(circle,rgba(232,195,106,.30),transparent 58%);pointer-events:none}
+.cer-champion .champ-inner{position:relative;z-index:1}
+.cer-champion img{width:min(270px,70vw);aspect-ratio:1;border-radius:26px;object-fit:cover;border:3px solid #e8c36a;box-shadow:0 0 70px rgba(232,195,106,.28)}
+.cer-month-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px auto;max-width:440px}
+.cer-month-stat{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:9px}
+.cer-month-stat b{display:block;color:#e8c36a;font-size:17px}
+.cer-month-stat span{color:#cbbfae;font-size:9px}
+@media(max-width:650px){
+  .cer-bracket-grid{grid-template-columns:1fr 1fr}
+  .cer-versus{grid-template-columns:1fr;gap:7px}
+  .cer-vs{font-size:14px}
+  .cer-side img{width:88px}
+}
+</style>
+
 </head>
 <body>
 <button type="button" class="exit-demo" id="exitDemo">خروج</button>
@@ -1274,14 +1320,9 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
           </select>
           <label class="fl">معاينة النص النهائي</label>
           <input class="fi" id="awardLabel" readonly placeholder="يُبنى تلقائيًا من النوع والسنة"/>
-          <label class="fl" style="display:flex;align-items:center;gap:8px;margin-top:10px;cursor:pointer">
-            <input type="checkbox" id="awardGoldChk" style="width:18px;height:18px">
-            <span>اجعلها ذهبية (تأثير ذهبي على البطاقة) — اختياري</span>
-          </label>
-          <p class="ident-meta" style="margin-top:4px">لا يُفعّل الذهبي تلقائيًا؛ حدده فقط للجوائز التي تريد لها مظهرًا ذهبيًا.</p>
+          <p class="ident-meta" style="margin-top:10px">التأثير الذهبي محجوز حصراً لجائزة «أفضل أغنية في السنة — جائزة IV»، ويبقى دائمًا ولا يمكن إزالته بحذف جوائز أخرى.</p>
           <div class="form-actions">
             <button type="button" class="btn pri" id="awardGrantBtn">منح الجائزة</button>
-            <button type="button" class="btn" id="awardGoldOffBtn" style="margin-right:8px">إزالة الذهبي</button>
           </div>
           <div id="awardTrackInfo" style="margin-top:10px;font-size:12px;color:var(--mute)"></div>
           <label class="fl" style="margin-top:14px">حذف جائزة من العمل</label>
@@ -1611,7 +1652,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
 <script>
 (function(){
-  try{ console.log("IV_BUILD 20260922g"); window.IV_BUILD="20260922g"; }catch(e){}
+  try{ console.log("IV_BUILD 20260930_AWARDS_V2"); window.IV_BUILD="20260930_AWARDS_V2"; }catch(e){}
   var IV_SEED_DEMO=false;
   var localSeedOnly=false;
   var FB_CONFIG={
@@ -1679,6 +1720,7 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
             plays:t.plays||0,likes:t.likes||0,dislikes:t.dislikes||0,
             owner:t.owner||'',owners:t.owners||t.ownerCodes||[],ownerCodes:t.ownerCodes||t.owners||[],
             date:t.date||'',createdAt:t.createdAt||0,updatedAt:t.updatedAt||0,awards:t.awards||[],
+            goldAward:!!t.goldAward,monthlyStats:t.monthlyStats||{},
             pending:!!t.pending,pendingFor:t.pendingFor||[],lyrics:t.lyrics||'',lyricSync:!!t.lyricSync,
             albumId:t.albumId||'',albumTitle:t.albumTitle||'',albumCover:(t.albumCover&&String(t.albumCover).indexOf('http')===0)?t.albumCover:'',
             cover:(t.cover&&String(t.cover).indexOf('http')===0)?t.cover:''
@@ -1740,7 +1782,8 @@ html[data-theme=dark] .dock button .dock-ind{background:#e8c36a!important}
       audioUrl:tr.audioUrl||'', plays:tr.plays||0, likes:tr.likes||0, dislikes:tr.dislikes||0,
       owner:tr.owner||'', owners:tr.owners||tr.ownerCodes||[], ownerCodes:tr.ownerCodes||tr.owners||[],
       date:tr.date||'', createdAt:tr.createdAt||0, updatedAt:tr.updatedAt||Date.now(),
-      awards:tr.awards||[], pending:!!tr.pending, pendingFor:tr.pendingFor||[],
+      awards:tr.awards||[], goldAward:!!tr.goldAward, monthlyStats:tr.monthlyStats||{},
+      pending:!!tr.pending, pendingFor:tr.pendingFor||[],
       lyrics:tr.lyrics||'', lyricSync:!!tr.lyricSync,
       cover:(tr.cover&&String(tr.cover).indexOf('http')===0)?tr.cover:''
     };
@@ -1894,7 +1937,8 @@ var $=function(id){return document.getElementById(id)};
     ivlive_notifs:'notifs',
     ivlive_plays:'plays',
     ivlive_deleted:'deleted',
-    ivlive_favs:'favs'
+    ivlive_favs:'favs',
+    ivlive_award_brackets:'award_brackets'
   };
   var IV_CLOUD_LOCK=0;
   function save(k,v,opt){
@@ -2214,11 +2258,17 @@ var $=function(id){return document.getElementById(id)};
   }
 
   function monthNameAr(m){return ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'][m-1]||''}
+
+  function isAnnualBestSongAwardLabel(label){
+    var n=String(label||'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/\s+/g,' ').trim().toLowerCase();
+    return /افضل\s*اغني/.test(n) && (/السنه/.test(n)||/لسنه/.test(n)||/في\s*السنه/.test(n)) && /2026/.test(n);
+  }
   function grantAward(track, label, makeGold){
     if(!track||!label) return;
     if(!track.awards) track.awards=[];
     if(track.awards.indexOf(label)===-1) track.awards.push(label);
-    if(makeGold) track.goldAward=true;
+    /* الذهبي حصراً لأفضل أغنية في السنة 2026، ولا يتم إلغاؤه لاحقاً */
+    if(isAnnualBestSongAwardLabel(label)) track.goldAward=true;
     track.updatedAt=Date.now();
     try{
       if(window._ivWriteLast) window._ivWriteLast.tracks=0;
@@ -2258,30 +2308,14 @@ var $=function(id){return document.getElementById(id)};
     if(!label){ toast('اختر نوع الجائزة والسنة'); return; }
     var tr=tracks.find(function(x){return String(x.id)===String(id)});
     if(!tr){ toast('العمل غير موجود'); return; }
-    var makeGold=!($('awardGoldChk')&&!$('awardGoldChk').checked);
-    // فقط إذا محدد صراحة
-    makeGold=!!($('awardGoldChk')&&$('awardGoldChk').checked);
-    grantAward(tr, label, makeGold);
+    grantAward(tr, label, false);
     try{ renderAll(); updateProfileUI(); }catch(e){}
     if($('awardLabel')) $('awardLabel').value='';
-    if($('awardGoldChk')) $('awardGoldChk').checked=false;
     fillAwardTrackSel();
     refreshAwardRemoveSel(tr);
-    toast(makeGold?('تم منح الجائزة مع الذهبي: '+label):('تم منح الجائزة: '+label));
+    toast(isAnnualBestSongAwardLabel(label)?('تم منح جائزة أفضل أغنية في السنة — التأثير الذهبي دائم'):('تم منح الجائزة: '+label));
   };
-  if($('awardGoldOffBtn')) $('awardGoldOffBtn').onclick=function(){
-    var id=$('awardTrackSel')&&$('awardTrackSel').value;
-    if(!id){ toast('اختر عملًا'); return; }
-    var tr=tracks.find(function(x){return String(x.id)===String(id)});
-    if(!tr){ toast('العمل غير موجود'); return; }
-    tr.goldAward=false;
-    tr.updatedAt=Date.now();
-    try{ if(window._ivWriteLast) window._ivWriteLast.tracks=0; }catch(e){}
-    persistTracks();
-    try{ cloudPut('tracks', tracks); }catch(e){}
-    try{ renderAll(); }catch(e){}
-    toast('تم إزالة التأثير الذهبي');
-  };
+  /* لا يوجد زر لإزالة الذهبي: الجائزة السنوية الذهبية دائمة. */
   function refreshAwardRemoveSel(tr){
     var sel=$('awardRemoveSel'); if(!sel) return;
     sel.innerHTML='<option value="">— اختر جائزة للحذف —</option>';
@@ -2307,7 +2341,8 @@ var $=function(id){return document.getElementById(id)};
     if(!tr||!tr.awards) return;
     var removed=tr.awards.splice(+idx,1);
     tr.awards=tr.awards.slice();
-    if(!tr.awards.length) tr.goldAward=false;
+    /* goldAward لا يُعاد إلى false مطلقاً */
+    if(isAnnualBestSongAwardLabel(removed[0])) tr.goldAward=true;
     tr.updatedAt=Date.now();
     try{
       if(window._ivWriteLast) window._ivWriteLast.tracks=0;
@@ -3403,6 +3438,14 @@ var $=function(id){return document.getElementById(id)};
     var next=(val===prev)?0:val;
     if(next===1) t.likes+=1;
     if(next===-1) t.dislikes+=1;
+    /* إحصاءات شهرية حقيقية: تُحدث فقط عند تغيير الإعجاب */
+    try{
+      var dNow=new Date(), mk=dNow.getFullYear()+'-'+String(dNow.getMonth()+1).padStart(2,'0');
+      t.monthlyStats=t.monthlyStats||{};
+      t.monthlyStats[mk]=t.monthlyStats[mk]||{plays:0,likes:0};
+      if(prev===1 && next!==1) t.monthlyStats[mk].likes=Math.max(0,(+t.monthlyStats[mk].likes||0)-1);
+      if(prev!==1 && next===1) t.monthlyStats[mk].likes=(+t.monthlyStats[mk].likes||0)+1;
+    }catch(eMS){}
     reactions[key][sid]=next;
     save('ivlive_reactions',reactions);persistTracks();updateLikeUI(tid);renderSongs();renderStats();renderAwards();
   }
@@ -3897,12 +3940,13 @@ var $=function(id){return document.getElementById(id)};
   $('prevY').onclick=function(){year--;if(year<2026)year=2026;renderEvents()};
   $('nextY').onclick=function(){year++;if(year>2028)year=2028;renderEvents()};
 
-  /* ===== Ceremony ===== */
-  var cerState={step:0,ev:null,demo:false,timers:[],voteSel:null,votes:{}};
+  /* ===== Ceremony V2 — monthly presentation + 8-song knockout ===== */
+  var cerState={step:0,ev:null,demo:false,timers:[],voteTimer:null,bracket:null,matchIndex:0,voteReady:false,selectedSide:null};
   var votesStore=load('ivlive_votes',{})||{};
+  var bracketStore=load('ivlive_award_brackets',{})||{};
 
   function cerClearTimers(){
-    cerState.timers.forEach(function(t){clearTimeout(t)});
+    (cerState.timers||[]).forEach(function(t){clearTimeout(t);clearInterval(t)});
     cerState.timers=[];
   }
   function cerLater(fn,ms){
@@ -3915,11 +3959,9 @@ var $=function(id){return document.getElementById(id)};
     box.innerHTML='';
     for(var i=0;i<18;i++){
       var s=document.createElement('span');
-      s.style.left=(Math.random()*100)+'%';
-      s.style.top=(Math.random()*100)+'%';
+      s.style.left=(Math.random()*100)+'%'; s.style.top=(Math.random()*100)+'%';
       s.style.animationDelay=(Math.random()*4)+'s';
-      s.style.width=(2+Math.random()*4)+'px';
-      s.style.height=s.style.width;
+      s.style.width=(2+Math.random()*4)+'px'; s.style.height=s.style.width;
       box.appendChild(s);
     }
   }
@@ -3939,314 +3981,345 @@ var $=function(id){return document.getElementById(id)};
   }
   function setProgress(step,total){
     var p=$('cerProgress'); if(!p) return;
-    var html='';
-    for(var i=0;i<total;i++) html+='<i class="'+(i<=step?'on':'')+'"></i>';
-    p.innerHTML=html;
+    var h=''; for(var i=0;i<total;i++) h+='<i class="'+(i<=step?'on':'')+'"></i>';
+    p.innerHTML=h;
   }
   function stopSnippets(){
-    try{ var s=$('snipEl'); if(s){ s.pause(); s.removeAttribute('src'); } }catch(e){}
+    try{var s=$('snipEl');if(s){s.pause();s.removeAttribute('src')}}catch(e){}
   }
   function closeCeremony(){
     cerClearTimers();
-    if(cerState.voteTimer){ clearInterval(cerState.voteTimer); cerState.voteTimer=null; }
+    if(cerState.voteTimer){clearInterval(cerState.voteTimer);cerState.voteTimer=null;}
     stopSnippets();
     $('ceremony').classList.remove('on');
-    setTimeout(function(){ $('cerPanel').innerHTML=''; $('cerConfetti').innerHTML=''; }, 480);
+    setTimeout(function(){if($('cerPanel'))$('cerPanel').innerHTML='';if($('cerConfetti'))$('cerConfetti').innerHTML=''},480);
   }
   $('cerClose').onclick=closeCeremony;
-  $('cerSkip').onclick=function(){
-    if(!cerState.ev) return;
-    // تخطي للمرحلة التالية
-    cerClearTimers();
-    cerState.step++;
-    runCeremonyStep();
-  };
 
+  function monthKeyFor(y,m){return y+'-'+String(m).padStart(2,'0')}
+  function monthlyMetric(t,y,m){
+    var k=monthKeyFor(y,m), s=t&&t.monthlyStats&&t.monthlyStats[k];
+    if(s) return {plays:+s.plays||0,likes:+s.likes||0,legacy:false};
+    /* توافق مع الأغاني القديمة: لا نخترع بيانات شهرية؛ نستخدم العداد العام كاحتياط فقط */
+    return {plays:+(t&&t.plays)||0,likes:+(t&&t.likes)||0,legacy:true};
+  }
+  function metricScore(t,y,m){
+    var s=monthlyMetric(t,y,m);
+    return (s.plays||0)+(s.likes||0);
+  }
+  function tournamentArtistKeys(t){
+    var ns=artistNames(t)||[];
+    return ns.length?ns.map(function(n){return String(n).trim().toLowerCase()}):['__unknown__'];
+  }
+  function qualifyTop8(y,m){
+    var ranked=(tracks||[]).map(function(t){
+      var s=monthlyMetric(t,y,m);
+      return {t:t,plays:s.plays,likes:s.likes,score:s.plays+s.likes};
+    }).sort(function(a,b){
+      return b.score-a.score || b.plays-a.plays || b.likes-a.likes || (+b.t.createdAt||0)-(+a.t.createdAt||0);
+    });
+    var counts={}, out=[];
+    ranked.forEach(function(x){
+      if(out.length>=8)return;
+      var ks=tournamentArtistKeys(x.t), ok=true;
+      ks.forEach(function(k){if((counts[k]||0)>=2)ok=false;});
+      if(!ok)return;
+      out.push(x.t);
+      ks.forEach(function(k){counts[k]=(counts[k]||0)+1;});
+    });
+    return out;
+  }
+  function seededShuffle(arr,seedText){
+    var a=arr.slice(), h=2166136261;
+    String(seedText||'').split('').forEach(function(ch){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)});
+    function rnd(){h+=0x6D2B79F5;var t=h;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296}
+    for(var i=a.length-1;i>0;i--){var j=Math.floor(rnd()*(i+1)),tmp=a[i];a[i]=a[j];a[j]=tmp;}
+    return a;
+  }
+  function buildBracket(ev,list){
+    var key=ev.key;
+    var existing=bracketStore[key];
+    if(existing&&existing.ids&&existing.ids.length===8){
+      var restored=existing.ids.map(function(id){return tracks.find(function(t){return String(t.id)===String(id)})}).filter(Boolean);
+      if(restored.length===8)return {ids:existing.ids.slice(),tracks:restored,drawnAt:existing.drawnAt||0};
+    }
+    var top=qualifyTop8(ev.year,ev.month);
+    if(top.length<8){
+      /* في حال نقص البيانات، نكمل من باقي الأعمال حتى يظل الايفنت قابلاً للتشغيل */
+      var seen=top.map(function(t){return String(t.id)});
+      (tracks||[]).slice().sort(function(a,b){return metricScore(b,ev.year,ev.month)-metricScore(a,ev.year,ev.month)}).forEach(function(t){
+        if(top.length>=8)return;
+        if(seen.indexOf(String(t.id))>=0)return;
+        var ks=tournamentArtistKeys(t), ok=true;
+        ks.forEach(function(k){
+          var n=top.filter(function(z){return tournamentArtistKeys(z).indexOf(k)>=0}).length;
+          if(n>=2)ok=false;
+        });
+        if(ok){top.push(t);seen.push(String(t.id));}
+      });
+    }
+    var draw=seededShuffle(top,key);
+    var ids=draw.map(function(t){return t.id});
+    bracketStore[key]={ids:ids,drawnAt:Date.now(),year:ev.year,month:ev.month};
+    try{save('ivlive_award_brackets',bracketStore)}catch(e){}
+    return {ids:ids,tracks:draw,drawnAt:bracketStore[key].drawnAt};
+  }
+  function voteData(ev){
+    var d=votesStore[ev.key];
+    if(!d || Array.isArray(d) || d.matches==null){
+      d={matches:{},legacy:d||{}};
+      votesStore[ev.key]=d;
+    }
+    d.matches=d.matches||{};
+    return d;
+  }
+  function currentMatch(){
+    var b=cerState.bracket, i=cerState.matchIndex;
+    if(!b)return null;
+    if(i<4) return {round:'ربع النهائي',code:'QF'+(i+1),a:b.tracks[i*2],b:b.tracks[i*2+1]};
+    if(i<6){
+      var wi=cerState.winners&&cerState.winners.qf||[];
+      return {round:'نصف النهائي',code:'SF'+(i-3),a:wi[(i-4)*2],b:wi[(i-4)*2+1]};
+    }
+    var sw=cerState.winners&&cerState.winners.sf||[];
+    return {round:'النهائي',code:'F1',a:sw[0],b:sw[1]};
+  }
+  function matchKey(ev,code){return String(ev.key)+'_'+String(code)}
+  function ensureMatchVotes(ev,code){
+    var d=voteData(ev), k=matchKey(ev,code);
+    d.matches[k]=d.matches[k]||{votes:{},winner:null,updatedAt:0};
+    d.matches[k].votes=d.matches[k].votes||{};
+    return d.matches[k];
+  }
+  function countSideVotes(m){
+    var a=0,b=0;
+    Object.keys(m.votes||{}).forEach(function(u){if(m.votes[u]==='A')a++;else if(m.votes[u]==='B')b++;});
+    return {A:a,B:b};
+  }
+  function persistAwardVotes(ev){
+    votesStore[ev.key]=votesStore[ev.key]||{matches:{}};
+    try{
+      saveLocal('ivlive_votes',votesStore);
+      if(window._ivWriteLast)window._ivWriteLast.votes=0;
+      if(typeof cloudPut==='function')cloudPut('votes',votesStore);
+    }catch(e){}
+  }
+  function loadRemoteAwardData(ev,done){
+    var jobs=[];
+    if(typeof cloudGet==='function' && cloudOn){
+      jobs.push(cloudGet('votes').then(function(v){if(v&&typeof v==='object'){votesStore=Object.assign({},votesStore,v);saveLocal('ivlive_votes',votesStore)}}).catch(function(){}));
+      jobs.push(cloudGet('award_brackets').then(function(v){if(v&&typeof v==='object'){bracketStore=Object.assign({},bracketStore,v);saveLocal('ivlive_award_brackets',bracketStore)}}).catch(function(){}));
+    }
+    Promise.all(jobs).then(function(){if(done)done()});
+  }
   function startCeremony(ev,demo){
     cerClearTimers();
-    if(cerState.voteTimer){ clearInterval(cerState.voteTimer); }
-    cerState={step:0,ev:ev,demo:!!demo,timers:[],voteSel:null,votes:votesStore[ev.key]||{},voteReady:false,voteTimer:null};
+    if(cerState.voteTimer){clearInterval(cerState.voteTimer);}
+    cerState={step:0,ev:ev,demo:!!demo,timers:[],voteTimer:null,bracket:null,matchIndex:0,winners:{qf:[],sf:[]},voteReady:false,selectedSide:null};
     spawnParticles();
     $('ceremony').classList.add('on');
     $('cerSkip').style.display='block';
-    runCeremonyStep();
+    loadRemoteAwardData(ev,function(){
+      cerState.bracket=buildBracket(ev,tracksInMonth(ev.year,ev.month));
+      runCeremonyStep();
+    });
   }
-
   function monthLabel(ev){
-    if(ev.type==='yearly') return 'السنة '+ev.year;
+    if(ev.type==='yearly')return 'السنة '+ev.year;
     return monthsAr[ev.month-1]+' '+ev.year;
   }
-
-  function runCeremonyStep(){
-    var ev=cerState.ev; if(!ev) return;
-    var panel=$('cerPanel');
-    var list=tracksInMonth(ev.year,ev.month);
-    var totalSteps=5; // intro, plays, winner plays, likes, winner likes, vote+best
-    // steps: 0 intro, 1 plays stats, 2 plays winner, 3 likes stats, 4 likes winner, 5 vote, 6 best winner
-    if(cerState.step===0){
-      setProgress(0,6);
-      panel.innerHTML='<div class="cer-intro">'+
-        '<div class="onair">ON AIR · IV AWARDS</div>'+
-        '<div class="cer-logo">IV</div>'+
-        '<h1>توزيع الجوائز الشهرية</h1>'+
-        '<div class="month">لشهر '+monthLabel(ev)+'</div>'+
-        '<div class="spark"></div>'+
-        '</div>';
-      confettiBurst();
-      cerLater(function(){cerState.step=1;runCeremonyStep()},3200);
-    }
-    else if(cerState.step===1){
-      setProgress(1,6);
-      var byP=topBy(list,'plays').slice(0,5);
-      panel.innerHTML='<div class="cer-stats-title">إحصائيات الاستماع</div><div class="cer-stat-list" id="cerStatList"></div>';
-      var box=$('cerStatList');
-      byP.forEach(function(t,i){
-        var row=document.createElement('div');
-        row.className='cer-stat-row';
-        row.innerHTML='<img src="'+t.cover+'" alt=""/><div class="meta"><b>'+esc(t.title)+'</b><span>'+esc(artistLine(t))+'</span></div><div class="num" data-target="'+(t.plays||0)+'">0</div>';
-        box.appendChild(row);
-        cerLater(function(){
-          row.classList.add('show');
-          animateNum(row.querySelector('.num'), t.plays||0, 900);
-        }, 280+i*320);
-      });
-      cerLater(function(){cerState.step=2;runCeremonyStep()}, 280+byP.length*320+1400);
-    }
-    else if(cerState.step===2){
-      setProgress(2,6);
-      var win=topBy(list,'plays')[0];
-      if(!win){cerState.step=3;runCeremonyStep();return}
-      panel.innerHTML='<div class="cer-winner on">'+
-        '<div class="wlabel">جائزة الأكثر استماعاً</div>'+
-        '<img src="'+win.cover+'" alt=""/>'+
-        '<h2>'+esc(win.title)+'</h2>'+
-        '<div class="artist">'+esc(artistLine(win))+'</div>'+
-        '<div class="cer-award-name">الأكثر استماعاً — '+monthLabel(ev)+'</div>'+
-        '</div>';
-      if(!cerState.demo) grantAward(win, 'الأكثر استماعاً — '+monthLabel(ev));
-      confettiBurst();
-      cerLater(function(){cerState.step=3;runCeremonyStep()}, 3600);
-    }
-    else if(cerState.step===3){
-      setProgress(3,6);
-      var byL=topBy(list,'likes').slice(0,5);
-      panel.innerHTML='<div class="cer-stats-title">إحصائيات الإعجاب</div><div class="cer-stat-list" id="cerStatList"></div>';
-      var box=$('cerStatList');
-      byL.forEach(function(t,i){
-        var row=document.createElement('div');
-        row.className='cer-stat-row';
-        row.innerHTML='<img src="'+t.cover+'" alt=""/><div class="meta"><b>'+esc(t.title)+'</b><span>'+esc(artistLine(t))+'</span></div><div class="num" data-target="'+(t.likes||0)+'">0</div>';
-        box.appendChild(row);
-        cerLater(function(){
-          row.classList.add('show');
-          animateNum(row.querySelector('.num'), t.likes||0, 900);
-        }, 280+i*320);
-      });
-      cerLater(function(){cerState.step=4;runCeremonyStep()}, 280+byL.length*320+1400);
-    }
-    else if(cerState.step===4){
-      setProgress(4,6);
-      var win=topBy(list,'likes')[0];
-      if(!win){cerState.step=5;runCeremonyStep();return}
-      panel.innerHTML='<div class="cer-winner on">'+
-        '<div class="wlabel">جائزة الأكثر إعجاباً</div>'+
-        '<img src="'+win.cover+'" alt=""/>'+
-        '<h2>'+esc(win.title)+'</h2>'+
-        '<div class="artist">'+esc(artistLine(win))+'</div>'+
-        '<div class="cer-award-name">الأكثر إعجاباً — '+monthLabel(ev)+'</div>'+
-        '</div>';
-      if(!cerState.demo) grantAward(win, 'الأكثر إعجاباً — '+monthLabel(ev));
-      confettiBurst();
-      cerLater(function(){cerState.step=5;runCeremonyStep()}, 3600);
-    }
-    else if(cerState.step===5){
-      setProgress(5,6);
-      $('cerSkip').style.display='none';
-      var candidates=bestScore(list).slice(0,6);
-      if(!candidates.length){panel.innerHTML='<div class="empty" style="color:#cbbfae">لا أعمال للتصويت</div>';return}
-      var myVote=null;
-      if(profile.code && cerState.votes[profile.code]) myVote=cerState.votes[profile.code];
-      panel.innerHTML='<div class="cer-vote on">'+
-        '<div class="cer-vote-clock" id="cerClock">—</div>'+
-        '<div class="cer-nowplay" id="cerNow">اضغط تشغيل المقتطفات أولاً</div>'+
-        '<h3>تصويت · أفضل أغنية</h3>'+
-        '<div class="hint">لازم تسمع مقتطف 8 ثوانٍ من كل عمل قبل ما تقدر تصوّت</div>'+
-        '<button type="button" class="submit" id="cerStartSnips" style="margin-bottom:12px">▶ تشغيل المقتطفات</button>'+
-        '<div class="cer-vote-list" id="cerVoteList"></div>'+
-        '<button type="button" class="submit" id="cerVoteSubmit" disabled>'+(myVote?'تم التصويت':'التصويت بعد سماع الأجزاء')+'</button>'+
-        '<button type="button" class="submit" id="cerExitVote" style="margin-top:8px;background:transparent;border:1px solid rgba(255,255,255,.2)">خروج من الحفل</button>'+
-        '</div>';
-      var vbox=$('cerVoteList');
-      candidates.forEach(function(t){
-        var count=0;
-        Object.keys(cerState.votes).forEach(function(k){if(String(cerState.votes[k])===String(t.id)) count++});
-        var item=document.createElement('div');
-        item.className='cer-vote-item'+(myVote&&String(myVote)===String(t.id)?' selected':'');
-        item.setAttribute('data-id',t.id);
-        item.innerHTML='<img src="'+t.cover+'" alt=""/><div class="meta"><b>'+esc(t.title)+'</b><span>'+esc(artistLine(t))+'</span></div><div class="vcount">'+count+' صوت</div>';
-        if(!myVote){
-          item.onclick=function(){
-            if(!cerState.voteReady){ if($('cerNow')) $('cerNow').textContent='اسمع المقتطفات أولاً'; return; }
-            cerState.voteSel=t.id;
-            vbox.querySelectorAll('.cer-vote-item').forEach(function(x){x.classList.remove('selected')});
-            item.classList.add('selected');
-          };
-        }
-        vbox.appendChild(item);
-      });
-      cerState.voteReady=false;
-      function lockVote(){
-        if(cerState.step!==5) return;
-        if(cerState.voteTimer){ clearInterval(cerState.voteTimer); cerState.voteTimer=null; }
-        if(!myVote && cerState.voteSel && profile.code){
-          cerState.votes[profile.code]=cerState.voteSel;
-          votesStore[ev.key]=cerState.votes;
-          save('ivlive_votes',votesStore);
-        }
-        stopSnippets();
-        cerState.step=6;
-        runCeremonyStep();
-      }
-      $('cerVoteSubmit').onclick=function(){
-        if(!cerState.voteReady) return;
-        if(myVote) return;
-        if(!profile.code){toast('سجّل الدخول للتصويت');return}
-        if(!cerState.voteSel){toast('اختر عملاً أولاً');return}
-        lockVote();
-      };
-      if($('cerExitVote')) $('cerExitVote').onclick=function(){ closeCeremony(); };
-      var startBtn=$('cerStartSnips');
-      function afterSnips(){
-        cerState.voteReady=true;
-        var btn=$('cerVoteSubmit');
-        if(btn && !myVote){ btn.disabled=false; btn.textContent='تأكيد التصويت'; }
-        if($('cerNow')) $('cerNow').textContent='صوّت الآن';
-        if(startBtn) startBtn.style.display='none';
-        startVoteCountdown(60, lockVote);
-      }
-      if(myVote){
-        if(startBtn) startBtn.style.display='none';
-        cerState.voteReady=true;
-        if($('cerNow')) $('cerNow').textContent='تم تصويتك مسبقاً';
-      } else if(startBtn){
-        startBtn.onclick=function(){
-          startBtn.disabled=true;
-          startBtn.textContent='جاري التشغيل...';
-          // unlock both audio elements on this tap (iOS)
-          try{ var s=$('snipEl'); s.muted=false; var p=s.play(); if(p&&p.catch)p.catch(function(){}); s.pause(); }catch(eU){}
-          try{ audio.muted=false; }catch(eU2){}
-          playVoteSnippets(candidates, afterSnips);
-        };
-      } else {
-        playVoteSnippets(candidates, afterSnips);
-      }
-    }
-    else if(cerState.step===6){
-      setProgress(5,6);
-      $('cerSkip').style.display='none';
-      stopSnippets();
-      var tally={};
-      Object.keys(cerState.votes).forEach(function(k){
-        var id=String(cerState.votes[k]);
-        tally[id]=(tally[id]||0)+1;
-      });
-      var winId=null, maxV=-1;
-      Object.keys(tally).forEach(function(id){
-        if(tally[id]>maxV){maxV=tally[id];winId=id}
-      });
-      var win=winId? tracks.find(function(t){return String(t.id)===String(winId)}): null;
-      if(!win){panel.innerHTML='<div class="cer-winner on"><div class="wlabel">أفضل أغنية في الشهر</div><p style="color:#cbbfae">يُعلن الفائز بعد اكتمال التصويت</p></div>';return}
-      panel.innerHTML='<div class="cer-winner on">'+
-        '<div class="wlabel">أفضل أغنية في الشهر</div>'+
-        '<img src="'+win.cover+'" alt=""/>'+
-        '<h2>'+esc(win.title)+'</h2>'+
-        '<div class="artist">'+esc(artistLine(win))+'</div>'+
-        '<div class="cer-award-name">أفضل أغنية في الشهر — '+monthLabel(ev)+'</div>'+
-        '<p style="margin-top:14px;color:#cbbfae;font-size:13px">'+(maxV>0?(maxV+' صوت'):'يُحسم الفوز بالتصويت')+'</p>'+
-        '</div>';
-      if(!cerState.demo) grantAward(win, 'أفضل أغنية في الشهر — '+monthLabel(ev));
-      confettiBurst();
-    }
+  function skipCeremonyStep(){
+    cerClearTimers();
+    if(cerState.step<5){cerState.step++;runCeremonyStep();return;}
+    /* لا يتم تجاوز المواجهة بالضغط على تخطي؛ حتى لا يمر التصويت بدون نتيجة */
   }
-  function playVoteSnippets(cands, done){
-    var sn=$('snipEl');
-    var nowEl=$('cerNow');
-    var i=0;
-    var finished=false;
-    function finish(){
-      if(finished) return;
-      finished=true;
-      stopSnippets();
-      if(done) done();
+  $('cerSkip').onclick=skipCeremonyStep;
+
+  function renderBracketSeats(tracks8,y,m){
+    return tracks8.map(function(t,i){
+      var s=monthlyMetric(t,y,m);
+      return '<div class="cer-seat"><div class="seat-no">المقعد '+(i+1)+'</div><div class="seat-song"><img src="'+t.cover+'" alt=""/><div style="min-width:0"><b>'+esc(t.title)+'</b><span>'+esc(artistLine(t).replace(/^‎By /,''))+'</span><span>'+s.plays+' استماع · '+s.likes+' إعجاب</span></div></div></div>';
+    }).join('');
+  }
+  function renderMatch(match,ev){
+    var panel=$('cerPanel'); if(!match||!match.a||!match.b){panel.innerHTML='<div class="empty" style="color:#cbbfae">لا توجد مواجهة مكتملة.</div>';return;}
+    var m=ensureMatchVotes(ev,match.code), counts=countSideVotes(m), uid=String((profile&&profile.code)||'');
+    var previous=m.votes[uid], metricA=monthlyMetric(match.a,ev.year,ev.month), metricB=monthlyMetric(match.b,ev.year,ev.month);
+    cerState.voteReady=!!previous; cerState.selectedSide=previous||null;
+    panel.innerHTML='<div class="cer-match">'+
+      '<div class="cer-round">'+esc(match.round)+' · '+(match.code==='F1'?'المواجهة الأخيرة':'مواجهة '+(parseInt(match.code.replace(/\D/g,''),10)||1))+'</div>'+
+      '<h2 class="cer-match-title">'+esc(match.a.title)+' <span style="color:#e8c36a">VS</span> '+esc(match.b.title)+'</h2>'+
+      '<div class="cer-match-hint">اسمع مقتطفًا قصيرًا من الطرفين، ثم اختر A أو B. التصويت واحد لكل حساب في هذه المواجهة.</div>'+
+      '<div class="cer-versus">'+
+        '<div class="cer-side'+(previous==='A'?' selected':'')+'" id="cerSideA"><img src="'+match.a.cover+'" alt=""/><b>A · '+esc(match.a.title)+'</b><span>'+esc(artistLine(match.a))+'</span><div class="side-stat">'+metricA.plays+' استماع · '+metricA.likes+' إعجاب</div></div>'+
+        '<div class="cer-vs">VS</div>'+
+        '<div class="cer-side'+(previous==='B'?' selected':'')+'" id="cerSideB"><img src="'+match.b.cover+'" alt=""/><b>B · '+esc(match.b.title)+'</b><span>'+esc(artistLine(match.b))+'</span><div class="side-stat">'+metricB.plays+' استماع · '+metricB.likes+' إعجاب</div></div>'+
+      '</div>'+
+      '<div class="cer-vote-note" id="cerNow">'+(previous?'تم تصويتك في هذه المواجهة: '+previous:'اضغط تشغيل المقتطفين قبل التصويت')+'</div>'+
+      '<button type="button" class="cer-vote-btn" id="cerStartMatch" '+(previous?'style="display:none"':'')+'>▶ تشغيل مقتطفَي المواجهة</button>'+
+      '<button type="button" class="cer-vote-btn" id="cerConfirmMatch" '+(!previous?'disabled':'')+' style="margin-top:8px">'+(previous?'تم التصويت':'تأكيد A أو B')+'</button>'+
+      '<div class="cer-bracket-note">التعادل لا يذهب لقرعة: يُحسم بالأفضل في الاستماعات ثم الإعجابات خلال '+esc(monthLabel(ev))+' فقط.</div>'+
+      '</div>';
+    var a=$('cerSideA'),b=$('cerSideB'),start=$('cerStartMatch'),confirm=$('cerConfirmMatch');
+    function select(side){
+      if(!cerState.voteReady)return;
+      cerState.selectedSide=side;
+      a.classList.toggle('selected',side==='A');b.classList.toggle('selected',side==='B');
+      confirm.disabled=false;
     }
-    function next(){
-      if(cerState.step!==5){ stopSnippets(); return; }
-      if(i>=cands.length){ finish(); return; }
-      var t=cands[i++];
-      var src=srcOf(t);
-      if(nowEl) nowEl.textContent='مقتطف: '+t.title;
-      document.querySelectorAll('.cer-vote-item').forEach(function(el){
-        el.style.outline = String(el.getAttribute('data-id'))===String(t.id) ? '1px solid #e8c36a' : 'none';
+    a.onclick=function(){select('A')}; b.onclick=function(){select('B')};
+    if(previous){return;}
+    if(start)start.onclick=function(){
+      start.disabled=true;start.textContent='جاري تشغيل المقتطفين...';
+      try{var s=$('snipEl');s.muted=false;var p=s.play();if(p&&p.catch)p.catch(function(){});s.pause()}catch(e){}
+      playMatchSnippets([match.a,match.b],function(){
+        cerState.voteReady=true;
+        if($('cerNow'))$('cerNow').textContent='اختر A أو B الآن';
+        if(start)start.style.display='none';
       });
-      var player = sn || audio;
-      if(!player || !src){ cerLater(next, 800); return; }
-      try{ if(sn) sn.pause(); }catch(e0){}
-      try{ audio.pause(); }catch(e0b){}
+    };
+    confirm.onclick=function(){
+      if(!cerState.voteReady||!cerState.selectedSide)return;
+      if(!profile.code){toast('سجّل الدخول للتصويت');return;}
+      var mm=ensureMatchVotes(ev,match.code);
+      if(mm.votes[profile.code])return;
+      mm.votes[profile.code]=cerState.selectedSide;
+      mm.updatedAt=Date.now();
+      persistAwardVotes(ev);
+      resolveCurrentMatch(match,ev);
+    };
+  }
+  function playMatchSnippets(cands,done){
+    var sn=$('snipEl'),i=0,finished=false;
+    function finish(){if(finished)return;finished=true;stopSnippets();if(done)done();}
+    function next(){
+      if(finished||!cerState.ev)return;
+      if(i>=cands.length){finish();return;}
+      var t=cands[i++],src=srcOf(t),player=sn||audio;
+      if($('cerNow'))$('cerNow').textContent='مقتطف: '+t.title;
+      document.querySelectorAll('.cer-side').forEach(function(el){el.style.outline='none'});
+      if(!player||!src){cerLater(next,500);return;}
+      try{if(sn)sn.pause();}catch(e0){} try{audio.pause()}catch(e1){}
       var moved=false;
-      function afterClip(){
-        if(moved) return;
-        moved=true;
-        try{ player.onended=null; player.pause(); }catch(e2){}
-        cerLater(next, 280);
-      }
-      player.onended=afterClip;
-      player.onerror=function(){
-        if(player!==audio && src){
-          try{
-            audio.src=src; audio.load();
-            audio.onended=afterClip;
-            var pa=audio.play();
-            if(pa&&pa.catch) pa.catch(afterClip);
-          }catch(e4){ afterClip(); }
-        } else afterClip();
-      };
-      player.src=src;
-      player.load();
-      var startPlay=function(){
-        try{ player.currentTime=0; }catch(e3){}
-        var p=player.play();
-        if(p&&p.catch) p.catch(function(){
-          try{
-            audio.src=src; audio.load();
-            var pa=audio.play();
-            if(pa&&pa.catch) pa.catch(afterClip);
-          }catch(e5){ afterClip(); }
-        });
-      };
-      player.onloadeddata=startPlay;
-      setTimeout(startPlay, 80);
-      cerLater(afterClip, 8200);
+      function after(){if(moved)return;moved=true;try{player.onended=null;player.onerror=null;player.pause()}catch(e){};cerLater(next,260);}
+      player.onended=after;player.onerror=after;player.src=src;player.load();
+      var play=function(){try{player.currentTime=0}catch(e){}var p=player.play();if(p&&p.catch)p.catch(after)};
+      player.onloadeddata=play;setTimeout(play,80);cerLater(after,8200);
     }
     next();
   }
-  function startVoteCountdown(sec, done){
-    if(cerState.voteTimer){ clearInterval(cerState.voteTimer); cerState.voteTimer=null; }
-    var endAt=Date.now()+sec*1000;
-    var clock=$('cerClock');
-    function paint(){
-      if(cerState.step!==5){
-        if(cerState.voteTimer){ clearInterval(cerState.voteTimer); cerState.voteTimer=null; }
-        return;
-      }
-      var left=Math.max(0, Math.ceil((endAt-Date.now())/1000));
-      if(clock) clock.textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');
-      if(left<=0){
-        if(cerState.voteTimer){ clearInterval(cerState.voteTimer); cerState.voteTimer=null; }
-        if(done) done();
-      }
+  function resolveCurrentMatch(match,ev){
+    var mm=ensureMatchVotes(ev,match.code), counts=countSideVotes(mm), winSide=null,tie=false;
+    if(counts.A>counts.B)winSide='A';
+    else if(counts.B>counts.A)winSide='B';
+    else{
+      tie=true;
+      var sa=monthlyMetric(match.a,ev.year,ev.month), sb=monthlyMetric(match.b,ev.year,ev.month);
+      if(sa.plays>sb.plays)winSide='A';
+      else if(sb.plays>sa.plays)winSide='B';
+      else if(sa.likes>sb.likes)winSide='A';
+      else if(sb.likes>sa.likes)winSide='B';
+      else winSide='A'; /* تعادل كامل نادر جدًا: ترتيب القرعة يحسمه فقط كحل أخير ثابت */
     }
-    paint();
-    cerState.voteTimer=setInterval(paint, 250);
+    mm.winner=winSide;mm.tie=tie;mm.resolvedAt=Date.now();
+    persistAwardVotes(ev);
+    var winner=winSide==='A'?match.a:match.b;
+    var loser=winSide==='A'?match.b:match.a;
+    if(cerState.matchIndex<4){
+      cerState.winners.qf.push(winner);
+    }else if(cerState.matchIndex<6){
+      cerState.winners.sf.push(winner);
+    }else{
+      cerState.champion=winner;
+    }
+    var wasFinal=cerState.matchIndex===6;
+    cerState.matchIndex++;
+    cerState.voteReady=false;cerState.selectedSide=null;
+    panelMessage(match,winner,counts,tie,saferMonthly(match,ev),function(){
+      if(wasFinal){cerState.step=9;runCeremonyStep();return;}
+      if(cerState.matchIndex===4||cerState.matchIndex===6)cerLater(function(){runCeremonyStep()},2200);
+      else cerLater(function(){runCeremonyStep()},1700);
+    });
+  }
+  function saferMonthly(match,ev){
+    return {a:monthlyMetric(match.a,ev.year,ev.month),b:monthlyMetric(match.b,ev.year,ev.month)};
+  }
+  function panelMessage(match,winner,counts,tie,stats,done){
+    var panel=$('cerPanel');
+    panel.innerHTML='<div class="cer-winner on"><div class="wlabel">'+esc(tie?'تعادل — الحسم بالإحصائيات':'الفائز في المواجهة')+'</div>'+
+      '<img src="'+winner.cover+'" alt=""/><h2>'+esc(winner.title)+'</h2><div class="artist">'+esc(artistLine(winner))+'</div>'+
+      '<div class="cer-award-name">'+counts.A+' صوت A · '+counts.B+' صوت B</div>'+
+      (tie?'<div class="cer-tiebreak">الحسم: '+stats.a.plays+' مقابل '+stats.b.plays+' استماع، ثم '+stats.a.likes+' مقابل '+stats.b.likes+' إعجاب.</div>':'')+
+      '</div>';
+    confettiBurst();
+    if(done)cerLater(done,2300);
+  }
+  function renderStatsStage(list,field,title,ev,nextStep){
+    var panel=$('cerPanel'),by=topBy(list,field).slice(0,5);
+    panel.innerHTML='<div class="cer-stats-title">'+title+'</div><div class="cer-stat-list" id="cerStatList"></div>';
+    var box=$('cerStatList');
+    by.forEach(function(t,i){
+      var s=monthlyMetric(t,ev.year,ev.month),val=field==='plays'?s.plays:s.likes;
+      var row=document.createElement('div');row.className='cer-stat-row';
+      row.innerHTML='<img src="'+t.cover+'" alt=""/><div class="meta"><b>'+esc(t.title)+'</b><span>'+esc(artistLine(t))+'</span></div><div class="num" data-target="'+val+'">0</div>';
+      box.appendChild(row);
+      cerLater(function(){row.classList.add('show');animateNum(row.querySelector('.num'),val,900)},280+i*320);
+    });
+    cerLater(function(){cerState.step=nextStep;runCeremonyStep()},280+by.length*320+1300);
+  }
+  function runCeremonyStep(){
+    var ev=cerState.ev;if(!ev)return;
+    var panel=$('cerPanel'),list=tracks||[];
+    if(cerState.step===0){
+      setProgress(0,9);
+      panel.innerHTML='<div class="cer-intro"><div class="onair">ON AIR · IV AWARDS</div><div class="cer-logo">IV</div><h1>جوائز '+esc(monthLabel(ev))+'</h1><div class="month">الليلة نعلن الجوائز الشهرية ثم نصل إلى نهائي أفضل أغنية</div><div class="spark"></div></div>';
+      confettiBurst();cerLater(function(){cerState.step=1;runCeremonyStep()},2600);
+    }else if(cerState.step===1){
+      setProgress(1,9);
+      var byP=list.map(function(t){var s=monthlyMetric(t,ev.year,ev.month);return {t:t,v:s.plays}}).sort(function(a,b){return b.v-a.v}).map(function(x){return x.t});
+      renderStatsStage(byP,'plays','إحصائيات مرات الاستماع — '+monthLabel(ev),ev,2);
+    }else if(cerState.step===2){
+      setProgress(2,9);
+      var win=topBy(list.map(function(t){var s=monthlyMetric(t,ev.year,ev.month);t.__cerP=s.plays;return t}),'__cerP')[0];
+      if(!win){cerState.step=3;runCeremonyStep();return}
+      var s=monthlyMetric(win,ev.year,ev.month);
+      panel.innerHTML='<div class="cer-winner on"><div class="wlabel">🏆 جائزة الأكثر استماعاً</div><img src="'+win.cover+'" alt=""/><h2>'+esc(win.title)+'</h2><div class="artist">'+esc(artistLine(win))+'</div><div class="cer-award-name">'+s.plays+' استماع في '+esc(monthLabel(ev))+'</div></div>';
+      if(!cerState.demo)grantAward(win,'الأكثر استماعاً — '+monthLabel(ev),false);
+      confettiBurst();cerLater(function(){cerState.step=3;runCeremonyStep()},3200);
+    }else if(cerState.step===3){
+      setProgress(3,9);
+      var byL=list.map(function(t){var s=monthlyMetric(t,ev.year,ev.month);return {t:t,v:s.likes}}).sort(function(a,b){return b.v-a.v}).map(function(x){return x.t});
+      renderStatsStage(byL,'likes','إحصائيات مرات الإعجاب — '+monthLabel(ev),ev,4);
+    }else if(cerState.step===4){
+      setProgress(4,9);
+      var winL=topBy(list.map(function(t){var s=monthlyMetric(t,ev.year,ev.month);t.__cerL=s.likes;return t}),'__cerL')[0];
+      if(!winL){cerState.step=5;runCeremonyStep();return}
+      var sl=monthlyMetric(winL,ev.year,ev.month);
+      panel.innerHTML='<div class="cer-winner on"><div class="wlabel">❤️ جائزة الأكثر إعجاباً</div><img src="'+winL.cover+'" alt=""/><h2>'+esc(winL.title)+'</h2><div class="artist">'+esc(artistLine(winL))+'</div><div class="cer-award-name">'+sl.likes+' إعجاب في '+esc(monthLabel(ev))+'</div></div>';
+      if(!cerState.demo)grantAward(winL,'الأكثر إعجاباً — '+monthLabel(ev),false);
+      confettiBurst();cerLater(function(){cerState.step=5;runCeremonyStep()},3200);
+    }else if(cerState.step===5){
+      setProgress(5,9);$('cerSkip').style.display='none';
+      var b=cerState.bracket;
+      if(!b||b.tracks.length<8){
+        panel.innerHTML='<div class="cer-winner on"><div class="wlabel">أفضل أغنية في الشهر</div><p style="color:#cbbfae">نحتاج 8 أعمال مؤهلة لإجراء القرعة.</p></div>';return;
+      }
+      panel.innerHTML='<div class="cer-tournament"><div class="cer-kicker">THE DRAW · IV AWARDS</div><h1 class="cer-big-title">قرعة أفضل ٨ أغاني</h1><div class="cer-sub">8 أعمال مؤهلة · بحد أقصى أغنيتان لكل فنان · الترتيب عشوائي ومثبت للجميع لهذا الإيفنت.</div><div class="cer-bracket-grid">'+renderBracketSeats(b.tracks,ev.year,ev.month)+'</div><div class="cer-bracket-note">سيبدأ الآن دور ربع النهائي — A أو B في كل مواجهة.</div></div>';
+      confettiBurst();cerLater(function(){cerState.step=6;runCeremonyStep()},4200);
+    }else if(cerState.step===6){
+      setProgress(6,9);
+      var match=currentMatch();
+      if(!match){cerState.step=9;runCeremonyStep();return}
+      renderMatch(match,ev);
+    }else if(cerState.step===9){
+      setProgress(8,9);$('cerSkip').style.display='none';
+      var champion=cerState.champion;
+      if(!champion){panel.innerHTML='<div class="empty" style="color:#cbbfae">لم يكتمل النهائي.</div>';return}
+      var s=monthlyMetric(champion,ev.year,ev.month);
+      panel.innerHTML='<div class="cer-champion cer-winner on"><div class="champ-glow"></div><div class="champ-inner"><div class="wlabel">👑 أفضل أغنية في '+esc(monthLabel(ev))+'</div><img src="'+champion.cover+'" alt=""/><h2>'+esc(champion.title)+'</h2><div class="artist">'+esc(artistLine(champion))+'</div><div class="cer-month-stats"><div class="cer-month-stat"><b>'+s.plays+'</b><span>استماع خلال الشهر</span></div><div class="cer-month-stat"><b>'+s.likes+'</b><span>إعجاب خلال الشهر</span></div></div><div class="cer-award-name">الفائزة بالتصفيات: ربع النهائي → نصف النهائي → النهائي</div></div></div>';
+      if(!cerState.demo)grantAward(champion,'أفضل أغنية في الشهر — '+monthLabel(ev),false);
+      confettiBurst();
+    }
   }
   function animateNum(el,target,dur){
     if(!el) return;
@@ -5379,16 +5452,26 @@ $('pub').onclick=function(){
         if(rUp>lUp){
           if(!t.awards) t.awards=[];
           if(t.goldAward==null && L.goldAward!=null) t.goldAward=L.goldAward;
+          if((t.awards||[]).some(isAnnualBestSongAwardLabel) || (L.awards||[]).some(isAnnualBestSongAwardLabel)) t.goldAward=true;
         } else if(lUp>rUp){
           t.awards=L.awards?L.awards.slice():[];
-          t.goldAward=!!L.goldAward;
+          t.goldAward=!!(t.goldAward||L.goldAward||((L.awards||[]).some(isAnnualBestSongAwardLabel)));
+          t.monthlyStats=t.monthlyStats||L.monthlyStats||{};
           t.updatedAt=lUp;
         } else {
           t.awards=t.awards||[];
           if(L.awards&&L.awards.length){
             L.awards.forEach(function(a){ if(t.awards.indexOf(a)<0) t.awards.push(a); });
           }
-          t.goldAward=!!(t.goldAward||L.goldAward);
+          t.goldAward=!!(t.goldAward||L.goldAward||((t.awards||[]).some(isAnnualBestSongAwardLabel))||((L.awards||[]).some(isAnnualBestSongAwardLabel)));
+          t.monthlyStats=t.monthlyStats||{};
+          var msR=t.monthlyStats||{}, msL=L.monthlyStats||{};
+          Object.keys(msL).forEach(function(k){
+            msR[k]=msR[k]||{plays:0,likes:0};
+            msR[k].plays=Math.max(+msR[k].plays||0,+msL[k].plays||0);
+            msR[k].likes=Math.max(+msR[k].likes||0,+msL[k].likes||0);
+          });
+          t.monthlyStats=msR;
         }
         map[id]=keepStats(t,L);
       } else {
@@ -5399,6 +5482,13 @@ $('pub').onclick=function(){
           L.awards=L.awards||[];
           t.awards.forEach(function(a){ if(L.awards.indexOf(a)<0) L.awards.push(a); });
         }
+        L.goldAward=!!(L.goldAward||t.goldAward||((L.awards||[]).some(isAnnualBestSongAwardLabel))||((t.awards||[]).some(isAnnualBestSongAwardLabel)));
+        L.monthlyStats=L.monthlyStats||{};
+        Object.keys(t.monthlyStats||{}).forEach(function(k){
+          L.monthlyStats[k]=L.monthlyStats[k]||{plays:0,likes:0};
+          L.monthlyStats[k].plays=Math.max(+L.monthlyStats[k].plays||0,+t.monthlyStats[k].plays||0);
+          L.monthlyStats[k].likes=Math.max(+L.monthlyStats[k].likes||0,+t.monthlyStats[k].likes||0);
+        });
         map[id]=keepStats(L,t);
       }
     });
@@ -5922,6 +6012,13 @@ $('pub').onclick=function(){
       playSeen[uid][pend.id]=now;
       try{ save('ivlive_plays', playSeen); }catch(eS){}
       tr.plays=(+tr.plays||0)+1;
+      /* إحصاءات الشهر: لا تعتمد على العداد العام */
+      try{
+        var md=new Date(now), mk=md.getFullYear()+'-'+String(md.getMonth()+1).padStart(2,'0');
+        tr.monthlyStats=tr.monthlyStats||{};
+        tr.monthlyStats[mk]=tr.monthlyStats[mk]||{plays:0,likes:0};
+        tr.monthlyStats[mk].plays=(+tr.monthlyStats[mk].plays||0)+1;
+      }catch(eMP){}
       tr.updatedAt=now;
       try{ if(window._ivWriteLast) window._ivWriteLast.tracks=0; }catch(eW){}
       try{ persistTracks(); }catch(eP){}
@@ -5938,6 +6035,11 @@ $('pub').onclick=function(){
   window.renderAll=renderAll;
   applyCloud();
   try{ dedupeTrackAwards(true); }catch(eD){}
+  try{
+    (tracks||[]).forEach(function(t){
+      if((t.awards||[]).some(isAnnualBestSongAwardLabel)) t.goldAward=true;
+    });
+  }catch(eGoldInit){}
   try{ ensureCovers(false); }catch(e){}
   setTimeout(function(){ try{ ensureCovers(false); }catch(e){} }, 1500);
   // إعادة محاولة تلقائية كل 4 ثوانٍ إذا بقيت فارغة (أقصى 5 مرات)
