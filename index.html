@@ -3,34 +3,16 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0"/>
-<meta http-equiv="Pragma" content="no-cache"/>
-<meta http-equiv="Expires" content="0"/>
 <title>IV PRODUCTION</title>
-<!-- IV_BOOT: 20260922g -->
 <script>
 (function(){
   var BUILD="20260922g";
-  try{ localStorage.setItem("iv_boot_build", BUILD); }catch(e){}
-  try{
-    if(navigator.serviceWorker){
-      navigator.serviceWorker.getRegistrations().then(function(rs){
-        (rs||[]).forEach(function(r){ try{r.unregister()}catch(e){} });
-      });
-    }
-  }catch(e){}
-  // إذا زيارة سابقة فشلت (مكتبة فاضية) → صفحة الإصلاح
-  var broken=false;
-  try{
-    var tr=localStorage.getItem("ivlive_tracks");
-    if(tr==="[]" || tr==="null") broken=true;
-    if(localStorage.getItem("iv_ui_broken")==="1") broken=true;
-  }catch(e){}
-  if(broken){
-    location.replace("fix.html?t="+Date.now());
-    return;
-  }
-  location.replace("app.html?v="+BUILD+"&t="+Date.now());
+  try { localStorage.setItem("iv_boot_build", BUILD); } catch(e){}
+  
+  // التوجيه المباشر والآمن إلى التطبيق لتجنب التعليق والشاشة البيضاء
+  window.onload = function() {
+    location.replace("app.html?v=" + BUILD + "&t=" + Date.now());
+  };
 })();
 </script>
 </head>
@@ -38,11 +20,6 @@
   <div style="text-align:center">
     <div style="font-weight:800;letter-spacing:.12em;font-size:28px">IV</div>
     <div style="margin-top:10px;font-size:13px;opacity:.7">جاري التحميل…</div>
-    <p style="margin-top:20px;font-size:12px">
-      <a href="fix.html" style="color:#6b4a28">إصلاح الجهاز</a>
-      ·
-      <a href="app.html?v=20260922g" style="color:#6b4a28">فتح مباشر</a>
-    </p>
   </div>
 </body>
 </html>
